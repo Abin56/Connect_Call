@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "sankar_group (Zego)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=ZEGO_APP_ID=222639987",
+        "--dart-define=ZEGO_APP_SIGN=8b0ef1e49bee14a906e1f37e60b47e3eb8823eb5593ed0fb1e90cbb7bee2a80b"
+      ]
+    }
+  ]
+}

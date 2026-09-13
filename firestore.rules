@@ -1,0 +1,47 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Any signed-in user can read the directory (needed for the contacts
+    // list and presence), but a profile can only be written by its owner.
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+
+      // A user's own blocked-list. Only its owner may write it (block/
+      // unblock), so nobody can tamper with someone else's list. Reads are
+      // split in two:
+      //  - the owner can read the whole subcollection (to show their own
+      //    Blocked Users screen / filter their own contacts)
+      //  - anyone else may read only the single doc keyed by their own
+      //    uid, i.e. "does this list contain ME" -- not the full list.
+      //    This is exactly what BlockService.isBlockedEitherWay needs (each
+      //    side checks whether it appears in the other's list) without
+      //    exposing who else userId has blocked.
+      match /blocked/{blockedUserId} {
+        allow read: if request.auth != null &&
+          (request.auth.uid == userId || request.auth.uid == blockedUserId);
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // A call record can only be touched by the two people on the call.
+    match /calls/{callId} {
+      allow read: if request.auth != null &&
+        (request.auth.uid == resource.data.callerId ||
+         request.auth.uid == resource.data.receiverId);
+
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.callerId;
+
+      allow update: if request.auth != null &&
+        (request.auth.uid == resource.data.callerId ||
+         request.auth.uid == resource.data.receiverId);
+
+      allow delete: if false;
+    }
+  }
+}
