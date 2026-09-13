@@ -9,10 +9,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <!-- Required for Bonus 8 (Screen Sharing) on Android 14+, per
-         ZegoCallMenuBarButtonName.toggleScreenSharingButton's own docs: the
-         capture session is kept alive by a foreground service, which needs
-         this specific service-type permission from API 34 onward. -->
+    <!-- Screen sharing keeps the capture session alive via a foreground
+         service, which needs this permission from API 34 onward. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>

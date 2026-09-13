@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-/// Exercises the same check [startGroupCall] (group_call_initiator.dart)
-/// runs over every selected invitee before sending a group invitation:
+/// Mirrors the block check [startGroupCall] runs over every invitee before
+/// sending a group invitation:
 ///
 /// ```dart
 /// final blockChecks = await Future.wait(
@@ -10,13 +10,10 @@ import 'package:flutter_test/flutter_test.dart';
 /// if (blockChecks.any((blocked) => blocked)) { ... }
 /// ```
 ///
-/// [BlockService.isBlockedEitherWay] itself is a thin two-doc-read Firestore
-/// query with no branching logic of its own to unit test (and the project
-/// doesn't depend on a Firestore fake package), so what's worth pinning down
-/// here is the *aggregation* rule this call site adds on top of it: a group
-/// call must be blocked from starting if ANY selected participant -- not
-/// just the first one checked -- has a blocking relationship with the
-/// signed-in user, in either direction.
+/// [BlockService.isBlockedEitherWay] is a thin Firestore read with nothing
+/// to unit test on its own, so this pins down the aggregation rule instead:
+/// a group call is blocked if ANY invitee has a blocking relationship with
+/// the signed-in user.
 Future<bool> _anyBlocked(
   List<String> invitees,
   Future<bool> Function(String peer) isBlockedEitherWay,
@@ -52,9 +49,6 @@ void main() {
     });
 
     test('true when a middle invitee is blocked, regardless of direction', () async {
-      // isBlockedEitherWay already folds "I blocked them" and "they blocked
-      // me" into one bool -- this call site just needs to treat that bool
-      // as an all-or-nothing gate across the whole invitee list.
       final blocked = await _anyBlocked(
         ['alice', 'bob', 'carol'],
         (peer) async => peer == 'bob',

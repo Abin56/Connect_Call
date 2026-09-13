@@ -6,13 +6,10 @@ import '../theme/app_text_styles.dart';
 
 /// A centered, icon-led confirmation/informational dialog used across the
 /// app instead of a bare [AlertDialog], so every dialog (block confirmation,
-/// permission prompts, etc.) shares the same premium look: a tinted icon
-/// badge, centered title/message, and a filled primary action next to a
-/// plain text dismiss action.
+/// permission prompts, etc.) shares the same look.
 ///
-/// Kept as a thin wrapper around [AlertDialog] (so it still respects
-/// [ThemeData.dialogTheme] for background/shape/text styling) rather than a
-/// fully custom widget.
+/// Kept as a thin wrapper around [AlertDialog] so it still respects
+/// [ThemeData.dialogTheme] rather than being a fully custom widget.
 class AppAlertDialog extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -21,8 +18,7 @@ class AppAlertDialog extends StatelessWidget {
   final String? confirmLabel;
   final VoidCallback? onConfirm;
 
-  /// Tints the icon badge and the confirm button red for a destructive
-  /// action (e.g. Block); otherwise both use the app's neutral surface.
+  /// Tints the icon badge and confirm button red (e.g. for Block).
   final bool destructive;
 
   const AppAlertDialog({
@@ -36,8 +32,7 @@ class AppAlertDialog extends StatelessWidget {
     this.destructive = false,
   });
 
-  /// Shows the dialog and resolves to `true` only if [confirmLabel] was
-  /// tapped -- the common "confirm this destructive action?" shape.
+  /// Shows the dialog and resolves to `true` only if [confirmLabel] was tapped.
   static Future<bool> confirm(
     BuildContext context, {
     required IconData icon,

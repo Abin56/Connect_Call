@@ -4,17 +4,13 @@ import '../core/constants/app_constants.dart';
 
 /// Firestore operations for user blocking.
 ///
-/// Structure: `users/{userId}/blocked/{blockedUserId}`, a subcollection on
-/// the blocker's own user doc rather than a top-level `blocked_users`
-/// collection. This keeps the existing `users` doc untouched (no risk of
-/// breaking anything reading it), makes "does A block B" a single doc read
-/// by id (cheap, no query), and lets Firestore rules restrict writes to
-/// `request.auth.uid == userId` -- a user can only ever write their own
-/// blocked list, never someone else's.
+/// Stored as `users/{userId}/blocked/{blockedUserId}`, a subcollection
+/// rather than a top-level `blocked_users` collection -- keeps "does A
+/// block B" a single doc read, and lets Firestore rules restrict writes to
+/// `request.auth.uid == userId`.
 ///
-/// Blocking is one-directional data (A's list says A blocked B) but the
-/// call-prevention rule is bidirectional: [isBlockedEitherWay] checks both
-/// A-blocks-B and B-blocks-A with two cheap doc reads.
+/// Blocking is one-directional data, but the call-prevention rule isn't:
+/// [isBlockedEitherWay] checks both directions.
 class BlockService {
   final FirebaseFirestore _firestore;
 
@@ -37,8 +33,7 @@ class BlockService {
     return _blockedCollection(userId).doc(blockedUserId).delete();
   }
 
-  /// Live "did [userId] block [otherUserId]" flag, for the block/unblock
-  /// button's own state.
+  /// Live "did [userId] block [otherUserId]" flag, for the block/unblock button.
   Stream<bool> watchIsBlocked(String userId, String otherUserId) {
     return _blockedCollection(
       userId,
@@ -52,9 +47,7 @@ class BlockService {
     ).snapshots().map((snapshot) => snapshot.docs.map((d) => d.id).toSet());
   }
 
-  /// True if either user has blocked the other -- the actual call-gating
-  /// check, since the block must work in both directions regardless of who
-  /// placed it.
+  /// True if either user has blocked the other -- the actual call-gating check.
   Future<bool> isBlockedEitherWay(String userIdA, String userIdB) async {
     final results = await Future.wait([
       _blockedCollection(userIdA).doc(userIdB).get(),

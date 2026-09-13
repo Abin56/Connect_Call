@@ -45,9 +45,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-      // Navigation happens automatically via SplashScreen's authStateProvider
-      // listener once the app-level auth stream picks up the new session,
-      // but since we're not routed through splash again here, push directly.
+      // We're not routed back through SplashScreen here, so push directly
+      // instead of relying on its authStateProvider listener.
       if (mounted) {
         Navigator.of(
           context,
@@ -72,9 +71,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Hero: dark mode gets the atmospheric black->red glow
-                // behind the logo; light mode stays on the plain background
-                // (the glow is a dark-mode-only atmospheric effect).
+                // Glow behind the logo is dark-mode only.
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 56, 24, 32),

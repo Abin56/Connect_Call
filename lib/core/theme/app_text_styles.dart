@@ -24,15 +24,9 @@ class AppTextStyles {
     );
   }
 
-  // Base styles intentionally omit `color` (left null) so that a bare
-  // `Text(style: AppTextStyles.body)` resolves its color from the ambient
-  // `DefaultTextStyle` (which MaterialApp/Scaffold derive from the active
-  // ThemeData.textTheme -- see AppTheme) instead of a fixed dark-mode
-  // color. This is what lets these same static styles work correctly in
-  // both the light and dark theme without every call site needing to look
-  // up Theme.of(context) itself. Use the "OnDark"/"OnLight" variants below
-  // when a widget's background is a fixed color regardless of app theme
-  // (e.g. the splash screen, which always shows on a near-black surface).
+  // No color set here -- these inherit from the active ThemeData so the
+  // same styles work in both light and dark mode. Use the OnDark variants
+  // below for surfaces that are always dark regardless of app theme.
   static TextStyle heading1 = _jakarta(
     fontSize: 28,
     fontWeight: FontWeight.w700,
@@ -79,8 +73,8 @@ class AppTextStyles {
     color: AppColorsDark.textPrimary,
   );
 
-  // Dark-surface variants, for use on near-black backgrounds (splash,
-  // hero cards) regardless of the active theme brightness.
+  // Dark-surface variants, for near-black backgrounds like splash and hero
+  // cards, regardless of the active theme.
   static TextStyle heading1OnDark = heading1.copyWith(color: Colors.white);
   static TextStyle heading2OnDark = heading2.copyWith(color: Colors.white);
   static TextStyle heading3OnDark = heading3.copyWith(color: Colors.white);

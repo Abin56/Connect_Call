@@ -7,13 +7,10 @@ import '../theme/app_text_styles.dart';
 import 'user_avatar.dart';
 
 /// A contact row: avatar, name, online/offline status, and call buttons.
-/// Presented as a card so it reads clearly in a list of many.
 ///
-/// [isBlocked] mutes the row (avatar/name/status dimmed, call buttons
-/// disabled) and swaps the trailing action from a red "Block" icon button
-/// ([onBlock]) to a red-outlined "Unblock" button ([onUnblock]), so a
-/// contact can be blocked or unblocked from this same list without needing
-/// the separate Blocked Users screen.
+/// [isBlocked] dims the row and swaps the trailing action from "Block"
+/// ([onBlock]) to "Unblock" ([onUnblock]), so blocking can happen right from
+/// this list without opening the separate Blocked Users screen.
 class UserTile extends StatelessWidget {
   final UserModel user;
   final VoidCallback? onAudioCall;
@@ -168,10 +165,8 @@ class UserTile extends StatelessWidget {
   }
 }
 
-/// A 40x40 circular icon button, the shared shell for [_CallActionButton]
-/// and [_BlockActionButton] -- a soft tinted-background style (for the
-/// secondary Block action) or a solid brand-color style (for the primary
-/// call actions), each with a faint matching shadow to lift it off the card.
+/// Shared 40x40 circular icon button shell for [_CallActionButton] and
+/// [_BlockActionButton].
 class _CircleActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;

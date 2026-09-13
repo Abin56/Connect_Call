@@ -5,25 +5,19 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/network_quality.dart';
 
-/// Small, unobtrusive network-quality pill shown during a call, using
-/// ZEGOCLOUD's own per-stream quality callback
-/// (`ZegoUIKit().getAudioVideoQualityNotifier`) rather than running any
-/// separate network test. Updates automatically as the notifier changes;
-/// never interrupts the call, it's purely informational.
+/// Small network-quality pill shown during a call, driven by ZEGOCLOUD's
+/// own per-stream quality notifier instead of a separate network test.
+/// Purely informational -- never interrupts the call.
 ///
-/// Passed as [ZegoUIKitPrebuiltCallConfig.foreground] from
-/// [buildCallConfig] so it survives call minimize/restore like the rest of
-/// the call chrome.
+/// Passed as [ZegoUIKitPrebuiltCallConfig.foreground] from [buildCallConfig]
+/// so it survives call minimize/restore.
 class NetworkQualityBadge extends StatelessWidget {
   const NetworkQualityBadge({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Placed below ZEGOCLOUD's own top menu bar (title/back button, ~96
-    // logical px tall by default) rather than at the very top-left, which
-    // would sit directly under that bar's title text. This keeps the badge
-    // clear of the call screen's own chrome without needing to know its
-    // exact height.
+    // Offset to clear ZEGOCLOUD's own top menu bar (~96px tall by default)
+    // instead of sitting under its title text.
     return Positioned(
       top: MediaQuery.of(context).padding.top + 104,
       left: 12,

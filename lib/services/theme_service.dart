@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Persists the user's chosen [ThemeMode] (System/Light/Dark) locally so it
-/// survives an app restart. Kept as its own tiny service, matching how the
-/// rest of the app separates a plain data-access concern from the Riverpod
-/// provider that exposes it.
+/// survives an app restart. Kept as its own service, separate from the
+/// Riverpod provider that exposes it, like the rest of the app.
 class ThemeService {
   static const _prefsKey = 'theme_mode';
 

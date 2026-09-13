@@ -52,10 +52,9 @@ class ConnectCallApp extends ConsumerWidget {
                   : (user.email?.split('@').first ?? user.uid),
             )
             .then((_) {
-              // Calling is now live for this user -- the first moment an
-              // incoming-call notification could actually matter, and the
-              // right contextual moment to ask for that permission (never
-              // during splash/login/registration).
+              // Ask for notification permission now that calling is live --
+              // not during splash/login/registration, where it wouldn't
+              // matter yet.
               final ctx = navigatorKey.currentContext;
               if (ctx != null && ctx.mounted) {
                 const NotificationPermissionFlow().maybeRequest(ctx);

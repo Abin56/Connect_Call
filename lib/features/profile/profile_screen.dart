@@ -48,9 +48,7 @@ class ProfileScreen extends ConsumerWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                // Featured header: subtle atmospheric glow behind the
-                // avatar/name/email, matching the treatment used on Home's
-                // call CTA and the Login/Register hero.
+                // Glow treatment matches Home's call CTA and the auth screens.
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),

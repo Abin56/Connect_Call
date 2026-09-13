@@ -13,10 +13,8 @@ import '../../providers/group_call_selection_provider.dart';
 import '../../providers/user_provider.dart';
 import 'group_call_initiator.dart';
 
-/// Bonus 7 (Group Calling) entry screen: pick 2+ contacts, then start an
-/// audio or video group call. Reuses [contactsProvider]/[UserAvatar] rather
-/// than a second contacts data source, and [startGroupCall] for the actual
-/// invitation -- this screen is UI/selection only.
+/// Pick 2+ contacts, then start an audio or video group call.
+/// UI/selection only -- [startGroupCall] handles the actual invitation.
 class GroupCallSelectContactsScreen extends ConsumerWidget {
   const GroupCallSelectContactsScreen({super.key});
 

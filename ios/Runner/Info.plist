@@ -53,12 +53,9 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<!-- Lets the app receive VoIP push notifications in the background so
-	     ZEGOCLOUD's offline-push (ZPNs) can wake it for an incoming call.
-	     PushKit + CallKit wiring on the native iOS side (APNs VoIP
-	     certificate, entitlements) still needs to be completed in Xcode with
-	     an Apple Developer account -- that step can't be done from source
-	     alone. See README for what's outstanding. -->
+	<!-- Lets ZEGOCLOUD's offline-push wake the app for an incoming call.
+	     PushKit + CallKit still need to be wired up in Xcode with an
+	     Apple Developer account -- can't be done from source alone. -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>voip</string>

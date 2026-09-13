@@ -28,9 +28,9 @@ class UserService {
         );
   }
 
-  /// All other users, ordered by name. Filtering by [currentUserId] happens
-  /// client-side since the contact list is small enough for this assignment
-  /// to not need a paginated query.
+  /// All other users, ordered by name. Filters out [currentUserId]
+  /// client-side since the contact list is small enough to not need
+  /// pagination.
   Stream<List<UserModel>> watchContacts(String currentUserId) {
     return _users
         .orderBy('name')

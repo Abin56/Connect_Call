@@ -2,22 +2,16 @@ import 'package:flutter/material.dart';
 
 import 'app_alert_dialog.dart';
 
-/// What a [PermissionRationaleDialog] is being shown for -- controls icon,
-/// copy, and (for [denied]/[permanentlyDenied]) which action the primary
-/// button performs. [microphone]/[camera]/[both] are shown *before* the
-/// native OS prompt (rationale); [denied]/[permanentlyDenied] are shown
-/// *after* the user has already said no once.
+/// What a [PermissionRationaleDialog] is being shown for -- controls icon
+/// and copy.
 enum PermissionPromptKind { microphone, camera, both }
 
-/// Branded, theme-aware replacement for asking the OS for camera/mic
-/// permission cold. Built on [AppAlertDialog] (same icon-badge/title/message
-/// shape used everywhere else in the app) so it never reads as a second,
-/// unrelated permission system -- just this app's own explanation shown a
-/// beat before the native dialog.
+/// Branded replacement for asking the OS for camera/mic permission cold.
+/// Built on [AppAlertDialog] so it reads as this app's own explanation
+/// rather than a second, unrelated permission system.
 ///
-/// Returns `true` if the user tapped the primary action ("Continue" for a
-/// rationale, "Open Settings" for a permanently-denied prompt), `false`
-/// otherwise (including dismissal).
+/// Returns `true` if the user tapped "Continue", `false` otherwise
+/// (including dismissal).
 Future<bool> showPermissionRationaleDialog(
   BuildContext context, {
   required PermissionPromptKind kind,
@@ -53,9 +47,9 @@ Future<bool> showPermissionRationaleDialog(
   ).then((result) => result ?? false);
 }
 
-/// Shown after the native prompt has already denied (or permanently
-/// denied) the permission -- distinct copy/actions from the pre-prompt
-/// rationale above. Returns `true` only if the user chose to open Settings.
+/// Shown after the native prompt has already denied the permission --
+/// distinct copy/actions from the pre-prompt rationale above. Returns
+/// `true` only if the user chose to open Settings.
 Future<bool> showPermissionDeniedDialog(
   BuildContext context, {
   required PermissionPromptKind kind,

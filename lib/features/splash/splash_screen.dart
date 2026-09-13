@@ -6,16 +6,12 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/auth_provider.dart';
 
-/// A short, premium brand-intro animation (Sankar Group -> ConnectCall) that
-/// plays while Firebase reports the current auth state, then routes to Home
-/// (if signed in) or Login (if not).
+/// Brand-intro animation that plays while Firebase resolves auth state,
+/// then routes to Home or Login.
 ///
-/// The intro animation and the auth-driven routing are intentionally
-/// decoupled: [_controller] always plays once, start to finish, and never
-/// restarts. Navigation only fires the *first* time auth state resolves
-/// ([_hasNavigated]), and is deferred until the intro has reached its
-/// "settled" branding state ([_introSettled]) so a fast auth response can't
-/// cut the animation short or flash Login->Home.
+/// The animation and navigation are decoupled: [_controller] always plays
+/// once through, and navigation waits for the intro to settle
+/// ([_introSettled]) so a fast auth response can't cut it short.
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 

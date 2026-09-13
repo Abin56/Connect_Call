@@ -1,7 +1,6 @@
-// Basic smoke test: the splash screen renders its branding while waiting
-// on the auth state stream. A full app pump isn't used here since that
-// requires Firebase.initializeApp, which isn't available in the test
-// environment.
+// Smoke test: splash screen renders its branding while waiting on auth
+// state. Doesn't pump a full app since that needs Firebase.initializeApp,
+// which isn't available in tests.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,11 +21,8 @@ void main() {
     );
     expect(find.text('CONNECTCALL'), findsOneWidget);
 
-    // Let the intro animation and its post-settle delay finish so no
-    // timers are left pending when the test tears down. There's no
-    // Firebase-backed auth state in this test, so navigation never
-    // fires -- just enough time needs to pass for the splash's own
-    // internal timers to complete.
+    // Let the intro animation and its settle delay finish so no timers
+    // are left pending at teardown.
     await tester.pump(const Duration(milliseconds: 1900));
     await tester.pump(const Duration(milliseconds: 1600));
   });

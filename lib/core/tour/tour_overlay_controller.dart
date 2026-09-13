@@ -7,15 +7,13 @@ import '../theme/app_radius.dart';
 import '../theme/app_text_styles.dart';
 import 'tour_step.dart';
 
-/// Drives a Flutter-Intro-style coach-mark tour over the *existing* app UI:
-/// a dark scrim with a spotlight cutout is inserted above the current
-/// screen via [Overlay], following the real on-screen position of each
-/// step's target widget. Nothing about the underlying screen is rebuilt or
-/// replaced.
+/// Coach-mark tour over the existing app UI: a dark scrim with a spotlight
+/// cutout is inserted above the current screen via [Overlay], following
+/// each step's target widget. The underlying screen is never rebuilt.
 ///
-/// [onGoToTab] lets the tour switch the Home bottom-nav tab before
-/// measuring a step's target, since Contacts/Calls/Profile are siblings of
-/// Home inside the same [IndexedStack] rather than separate pushed routes.
+/// [onGoToTab] switches the Home bottom-nav tab before measuring a step's
+/// target, since Contacts/Calls/Profile live in the same [IndexedStack] as
+/// Home rather than as separate routes.
 class TourOverlayController {
   TourOverlayController({
     required this.steps,
@@ -71,8 +69,6 @@ class TourOverlayController {
   }
 
   Widget _buildStep(BuildContext context) {
-    // Give the frame a chance to lay out the (possibly just-switched-to)
-    // tab before measuring the target's RenderBox.
     return _TourStepView(
       key: ValueKey(_index),
       step: steps[_index],
@@ -137,10 +133,8 @@ class _TourStepViewState extends State<_TourStepView>
     if (!mounted) return;
     final renderObject = widget.step.key.currentContext?.findRenderObject();
     if (renderObject is! RenderBox || !renderObject.attached) {
-      // Target not mounted yet (e.g. tab still settling, or a
-      // conditionally-rendered section like Recent Contacts is empty for
-      // this user) -- skip straight past this step rather than showing an
-      // orphaned overlay.
+      // Target isn't mounted (tab still settling, or a conditional
+      // section like Recent Contacts is empty) -- skip this step.
       widget.onNext();
       return;
     }
@@ -193,9 +187,7 @@ class _TourStepViewState extends State<_TourStepView>
                 ),
               ),
             ),
-            // Tap-through blocker for everything except the spotlighted
-            // widget itself, so the underlying screen stays inert while the
-            // tour is active.
+            // Blocks taps everywhere except the spotlighted widget.
             Positioned.fill(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -223,9 +215,8 @@ class _TourStepViewState extends State<_TourStepView>
   }
 }
 
-/// Clips the blurred backdrop to everything *except* the spotlighted
-/// widget's bounds, so the highlighted target stays perfectly crisp while
-/// the rest of the screen gets a frosted-glass dimming treatment.
+/// Clips the blurred backdrop to everything except the spotlighted
+/// widget's bounds, so the target stays crisp against the dimmed screen.
 class _ScrimClipper extends CustomClipper<Path> {
   _ScrimClipper({required this.rect});
 
@@ -355,9 +346,8 @@ class _Tooltip extends StatelessWidget {
         .clamp(_margin, screenSize.width - _cardWidth - _margin)
         .toDouble();
 
-    // Horizontal offset of the pointer arrow within the card, so it lines
-    // up with the target's center even when the card itself is clamped to
-    // stay on-screen.
+    // Keep the arrow pointing at the target center even when the card
+    // itself is clamped to stay on-screen.
     final targetCenterX = targetRect.left + targetRect.width / 2;
     final arrowLeft = (targetCenterX - left).clamp(24.0, _cardWidth - 24.0);
 

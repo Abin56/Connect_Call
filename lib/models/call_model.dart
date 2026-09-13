@@ -43,11 +43,10 @@ class CallModel {
   /// True when [userId] placed the call rather than received it.
   bool isOutgoingFor(String userId) => callerId == userId;
 
-  /// Throws [FormatException] if [map] contains a `callType`/`status` value
-  /// this build doesn't recognize (e.g. a newer app version wrote an enum
-  /// value this one predates). Callers merging many docs into one stream
-  /// (see [CallService.watchCallHistory]) should catch this per-document so
-  /// one malformed record can't take down the whole history stream.
+  /// Throws [FormatException] for an unrecognized `callType`/`status` (e.g. a
+  /// newer app version wrote an enum value this build predates). Catch this
+  /// per-document in [CallService.watchCallHistory] so one bad record doesn't
+  /// kill the whole history stream.
   factory CallModel.fromMap(String id, Map<String, dynamic> map) {
     try {
       return CallModel(

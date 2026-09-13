@@ -1,12 +1,9 @@
-// Covers the audit fix that error states (Profile, Home's call history and
-// contacts sections) use the shared AppError widget with a working retry
-// action, rather than a bare, non-retryable error Text.
+// Checks that error states use the shared AppError widget with a working
+// retry action, instead of a bare error Text.
 //
-// A full ProfileScreen/HomeTab pump isn't used here since both reach into
-// Firebase-backed providers (auth, contacts) that require
-// Firebase.initializeApp, which isn't available in the test environment
-// (see widget_test.dart). Instead this exercises the shared AppError widget
-// directly, and verifies provider-level retry (invalidate) behavior.
+// Doesn't pump a full ProfileScreen/HomeTab since both need
+// Firebase.initializeApp, which isn't available in tests (see
+// widget_test.dart). Tests AppError and provider-level retry directly.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

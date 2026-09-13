@@ -17,9 +17,8 @@ import '../history/widgets/call_history_tile.dart';
 import '../profile/profile_screen.dart';
 import 'widgets/recent_contacts_section.dart';
 
-/// Landing tab: greets the current user, offers a fast path into Contacts
-/// (search + quick call actions), and previews recent calls/contacts. Full
-/// lists live on the Contacts and Calls tabs.
+/// Landing tab: greets the user, offers a fast path into Contacts, and
+/// previews recent calls/contacts. Full lists live on their own tabs.
 class HomeTab extends ConsumerWidget {
   final VoidCallback onGoToContacts;
   final GlobalKey? startCallKey;
@@ -122,10 +121,8 @@ class HomeTab extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Featured Level-3 CTA: theme-aware brand statement. Dark mode
-            // gets the black/red atmospheric glow; light mode gets a soft
-            // white-to-red tint so the card reads as premium rather than a
-            // jarring dark island on an otherwise light screen.
+            // Dark mode gets the black/red glow; light mode gets a softer
+            // white-to-red tint so it doesn't read as a dark island.
             Builder(
               key: startCallKey,
               builder: (context) {
@@ -306,9 +303,8 @@ class HomeTab extends ConsumerWidget {
   }
 }
 
-/// Entry point for Bonus 7 (Group Calling). Deliberately a quieter,
-/// secondary-level card below the featured "Start a call" CTA -- group
-/// calling is a less-frequent action than a direct 1-to-1 call.
+/// Deliberately a quieter, secondary card below the featured "Start a call"
+/// CTA -- group calling is used less often than a direct 1-to-1 call.
 class _GroupCallCta extends StatelessWidget {
   final VoidCallback onTap;
 
@@ -385,11 +381,8 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Sits on top of the Home CTA card, so it reads as a translucent glass
-    // button rather than a second, competing block of brand red -- keeps
-    // the card itself as the single strong red statement. The glass tint
-    // flips between white-on-dark and black-on-light to stay visible on
-    // either version of the featured card.
+    // Translucent glass look so it doesn't compete with the card's own red;
+    // tint flips white/black-on-glass to stay visible in both themes.
     final labelColor = isDark ? Colors.white : AppColors.nearBlack;
     return Material(
       color: isDark

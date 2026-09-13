@@ -38,12 +38,10 @@ class CallService {
     return _calls.doc(callId).update(updates);
   }
 
-  /// Fallback "call ended" write used when the caller-owned write (the
-  /// common-case path) might not run, e.g. the caller's own device lost
-  /// the call first. Resolves the doc by [zegoCallId] since the caller side
-  /// is the only one that normally holds the Firestore doc id in memory.
-  /// Only writes if the doc is still `connected`, so a late-arriving write
-  /// from the other side never overwrites an already-terminal status.
+  /// Fallback "call ended" write for when the caller-owned write might not
+  /// run, e.g. the caller's own device lost the call first. Resolves the
+  /// doc by [zegoCallId] and only writes if it's still `connected`, so a
+  /// late write never overwrites an already-terminal status.
   Future<void> endConnectedCall(
     String zegoCallId, {
     required DateTime endedAt,
@@ -57,9 +55,8 @@ class CallService {
     );
   }
 
-  /// Same fallback path as [endConnectedCall], but for mid-call network
-  /// loss reported by the receiver's device (see
-  /// [CallingService._onRoomStateChanged]) rather than a clean hangup.
+  /// Same fallback path as [endConnectedCall], but for mid-call network loss
+  /// reported by the receiver's device rather than a clean hangup.
   Future<void> disconnectConnectedCall(
     String zegoCallId, {
     required DateTime endedAt,
@@ -97,10 +94,9 @@ class CallService {
     });
   }
 
-  /// All calls involving [userId], newest first. Two separate queries
-  /// (as caller / as receiver) are merged client-side since Firestore can't
-  /// OR across two different fields in one query. Each query's latest
-  /// results are cached so either stream updating triggers a fresh merge.
+  /// All calls involving [userId], newest first. Runs as-caller and
+  /// as-receiver queries separately and merges client-side, since Firestore
+  /// can't OR across two fields in one query.
   Stream<List<CallModel>> watchCallHistory(String userId) {
     late final StreamController<List<CallModel>> controller;
     List<QueryDocumentSnapshot<Map<String, dynamic>>>? callerDocs;
@@ -112,9 +108,8 @@ class CallService {
       if (callerDocs == null || receiverDocs == null) return;
       final calls = <String, CallModel>{};
       for (final doc in [...callerDocs!, ...receiverDocs!]) {
-        // A single malformed doc (e.g. an enum value this build doesn't
-        // recognize) must not take down the whole merged history stream for
-        // every other, valid call -- skip just that one and keep going.
+        // Skip a malformed doc (e.g. an unrecognized enum value) rather than
+        // taking down the whole merged history stream.
         try {
           calls[doc.id] = CallModel.fromMap(doc.id, doc.data());
         } on FormatException catch (error) {

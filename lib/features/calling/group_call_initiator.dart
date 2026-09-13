@@ -10,14 +10,12 @@ import '../../providers/block_provider.dart';
 import '../../providers/connectivity_provider.dart';
 
 /// Places a group call to [invitees] via the same ZEGOCLOUD invitation
-/// service [startCall] (see call_initiator.dart) uses for 1-to-1 calls --
-/// there is only ever one invitation service/call architecture in this app.
-/// Kept as a separate entry point (rather than folded into [startCall])
-/// because group calls are deliberately NOT written to the `calls` Firestore
-/// history collection, which is shaped for exactly one caller + one
-/// receiver; reusing the same function for both would mean branching its
-/// history-recording behavior on invitee count, which is more confusing
-/// than two small, single-purpose functions.
+/// service [startCall] uses for 1-to-1 calls.
+///
+/// Kept separate from [startCall] because group calls are deliberately NOT
+/// written to the `calls` history collection, which is shaped for one
+/// caller + one receiver -- branching that logic inside [startCall] would
+/// be more confusing than two small functions.
 ///
 /// Returns true if the invitation was sent.
 Future<bool> startGroupCall(
@@ -48,11 +46,8 @@ Future<bool> startGroupCall(
   final me = ref.read(authStateProvider).value;
   if (me == null) return false;
 
-  // Every selected participant must be checked -- a blocked contact must
-  // not slip into a group call just because the 1-to-1 gate in
-  // [call_initiator.dart] never ran for them. Reuses [BlockService] rather
-  // than any new check, per the same bidirectional block rule the rest of
-  // the app follows.
+  // Every invitee needs its own check -- the 1-to-1 block gate in
+  // call_initiator.dart never runs for a group call.
   final blockService = ref.read(blockServiceProvider);
   final blockChecks = await Future.wait(
     invitees.map((peer) => blockService.isBlockedEitherWay(me.uid, peer.id)),

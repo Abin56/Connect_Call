@@ -59,7 +59,7 @@ class AuthService {
   Future<void> logout() async {
     final uid = _auth.currentUser?.uid;
     if (uid != null) {
-      // Best-effort presence update; don't block logout if this fails.
+      // Best-effort -- don't block logout if this fails.
       await _firestore
           .collection(AppConstants.usersCollection)
           .doc(uid)
@@ -69,8 +69,7 @@ class AuthService {
     await _auth.signOut();
   }
 
-  /// Converts common FirebaseAuthException codes into messages a user can
-  /// actually understand, instead of surfacing raw SDK exceptions.
+  /// Converts common FirebaseAuthException codes into user-friendly messages.
   String readableError(Object error) {
     if (error is FirebaseAuthException) {
       switch (error.code) {

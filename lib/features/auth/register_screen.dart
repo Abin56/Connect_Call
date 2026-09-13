@@ -72,9 +72,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Hero: matches LoginScreen exactly (logo, typography,
-                // spacing, dark-mode-only atmospheric glow) so Login and
-                // Register feel like the same screen.
+                // Matches LoginScreen's hero so the two screens feel the same.
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 56, 24, 32),

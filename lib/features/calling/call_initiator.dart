@@ -13,11 +13,11 @@ import '../../providers/calling_provider.dart';
 import '../../providers/connectivity_provider.dart';
 
 /// Places a call to [peer] via ZEGOCLOUD's invitation service and records
-/// it in Firestore call history. Shared by every screen that offers a call
-/// button (Contacts, Home's Frequently Called) so there is exactly one
-/// implementation of "how a call gets started" -- config checks, the
-/// offline/permission/blocked gates, and the Firestore write all happen
-/// here rather than being copied per screen.
+/// it in Firestore call history.
+///
+/// Shared by every screen with a call button (Contacts, Home's Frequently
+/// Called) so the offline/permission/blocked gates and history write only
+/// live in one place.
 Future<void> startCall(
   BuildContext context,
   WidgetRef ref,
@@ -63,11 +63,9 @@ Future<void> startCall(
   );
   if (!context.mounted || !granted) return;
 
-  // Generated up front (rather than letting ZEGOCLOUD auto-generate one
-  // inside `send()`) so this same ID can be written to Firestore as
-  // `zegoCallId` immediately, and is guaranteed to match the `callID` the
-  // receiver later reads off `ZegoCallInvitationData` -- letting both sides
-  // reliably resolve the same call document.
+  // Generated up front instead of letting ZEGOCLOUD auto-generate one, so
+  // it can be written to Firestore as `zegoCallId` immediately and the
+  // receiver can resolve the same doc via `ZegoCallInvitationData.callID`.
   final zegoCallId = 'call_${me.uid}_${DateTime.now().millisecondsSinceEpoch}';
 
   final sent = await ZegoUIKitPrebuiltCallInvitationService().send(
@@ -85,13 +83,10 @@ Future<void> startCall(
     return;
   }
 
-  // The invitation is already on its way to the callee at this point, so a
-  // failure here must not be silent: without a Firestore doc id,
-  // CallingService has nothing to attach the later accepted/ended callbacks
-  // to, and the call would proceed with no history record at all. We can't
-  // retract the invitation (no "unsend" in the ZEGOCLOUD API), so on failure
-  // we surface it and let the call continue ZEGOCLOUD-side untracked rather
-  // than leaving the app in a half-configured state.
+  // The invitation is already sent at this point, and there's no "unsend"
+  // in the ZEGOCLOUD API. If the Firestore write fails, CallingService has
+  // no doc id to attach later status updates to, so we surface the error
+  // and let the call continue untracked rather than block the user.
   try {
     final callId = await ref
         .read(callServiceProvider)

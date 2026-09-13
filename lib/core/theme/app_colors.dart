@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
 
-/// Central color palette for the Sankar Group brand identity -- premium,
-/// minimal black/charcoal (dark) or white/grey (light) surfaces with a
-/// corporate brand red (#C8102E family) reserved as an accent for primary
-/// actions, active states, and destructive/missed-call indicators. Widgets
-/// should read colors from `Theme.of(context)` (which these feed into)
-/// rather than referencing [AppColors]/[AppColorsDark] directly, except in a
-/// few places that intentionally want a fixed brand color regardless of
-/// brightness (e.g. a red call-accept button).
+/// Central color palette for the Sankar Group brand identity: black/charcoal
+/// (dark) or white/grey (light) surfaces with a brand red accent. Prefer
+/// `Theme.of(context)` over referencing these directly, except where a
+/// color needs to stay fixed regardless of brightness.
 class AppColors {
   AppColors._();
 
   // Brand red family
-  static const Color red = Color(0xFFC8102E); // Primary brand red
-  static const Color redStrong = Color(0xFFD71920); // Strong red
-  static const Color redBright = Color(0xFFEF233C); // Bright red
-  static const Color redDeep = Color(0xFF8F0015); // Deep red
-  static const Color wineRed = Color(0xFF4A050D); // Dark wine red
-  static const Color softRed = Color(0xFFFDE8EC); // Soft red tint
+  static const Color red = Color(0xFFC8102E);
+  static const Color redStrong = Color(0xFFD71920);
+  static const Color redBright = Color(0xFFEF233C);
+  static const Color redDeep = Color(0xFF8F0015);
+  static const Color wineRed = Color(0xFF4A050D);
+  static const Color softRed = Color(0xFFFDE8EC);
 
   static const Color nearBlack = Color(0xFF151515);
   static const Color darkElevated = Color(0xFFE4E4E4);
@@ -50,18 +46,17 @@ class AppColors {
   static const Color muted = darkElevated;
 }
 
-/// Dark-theme counterpart. Not a naive inversion of [AppColors] -- dark
-/// surfaces step up in layered near-black tiers (background < backgroundSecondary
-/// < surface < card < elevated) so cards and dialogs stay readable against
-/// the base background, without ever using pure black.
+/// Dark-theme counterpart. Surfaces step up through layered near-black
+/// tiers (background < surface < card < elevated) so cards and dialogs
+/// stay readable, without ever using pure black.
 class AppColorsDark {
   AppColorsDark._();
 
-  static const Color red = Color(0xFFC8102E); // Primary brand red
-  static const Color redStrong = Color(0xFFD71920); // Strong red
-  static const Color redBright = Color(0xFFEF233C); // Bright accent
-  static const Color redDeep = Color(0xFF8F0015); // Deep accent
-  static const Color wineRed = Color(0xFF4A050D); // Dark wine red
+  static const Color red = Color(0xFFC8102E);
+  static const Color redStrong = Color(0xFFD71920);
+  static const Color redBright = Color(0xFFEF233C);
+  static const Color redDeep = Color(0xFF8F0015);
+  static const Color wineRed = Color(0xFF4A050D);
 
   static const Color background = Color(0xFF070707);
   static const Color backgroundSecondary = Color(0xFF101010);
@@ -90,57 +85,45 @@ class AppColorsDark {
   static const Color muted = elevated;
 }
 
-/// Reads the theme-correct "online" presence color, since [AppColors.online]
-/// and [AppColorsDark.online] otherwise have to be picked by hand at every
-/// call site based on `Theme.of(context).brightness`.
+/// Theme-correct "online" presence color, so call sites don't have to pick
+/// between [AppColors.online] and [AppColorsDark.online] by hand.
 extension AppColorsBrightness on BuildContext {
   Color get onlineColor => Theme.of(this).brightness == Brightness.dark
       ? AppColorsDark.online
       : AppColors.online;
 }
 
-/// Small, centralized set of atmospheric gradient treatments for the
-/// handful of "featured" brand moments in the app (Home call CTA, Profile
-/// header, Login/Register hero, Splash logo). These are intentionally
-/// subtle -- a soft glow/vignette, not a bold visible banner -- and are
-/// layered *under* content rather than replacing a surface color outright.
-///
-/// Dark-mode treatment: a black -> dark wine -> deep red -> brand red glow,
-/// meant to emanate from a point (e.g. behind a logo/avatar) and fade to
-/// near-black at the edges. Light-mode treatment: a much gentler white ->
-/// soft-red tint for the same "featured" spots, since a black->red glow
-/// reads as a dark-mode-only effect.
+/// Atmospheric gradients for the "featured" brand moments (Home call CTA,
+/// Profile header, Login/Register hero, Splash logo). Subtle glow, not a
+/// bold banner.
 class AppGradients {
   AppGradients._();
 
-  /// Dark-mode atmospheric glow: near-black centre/edges with a faint warm
-  /// red core. Use as a [BoxDecoration.gradient] behind logos/avatars/CTAs
-  /// on dark surfaces. [center] lets call sites move the glow's focal point
-  /// (e.g. top-center behind a logo vs. centered behind an avatar).
+  /// Dark-mode glow: near-black edges with a faint warm red core.
+  /// [center] moves the focal point behind a logo, avatar, etc.
   static RadialGradient darkGlow({Alignment center = Alignment.topCenter}) {
     return RadialGradient(
       center: center,
       radius: 1.1,
       colors: const [
-        Color(0x33C8102E), // brand red, low opacity
-        Color(0xFF570914), // deep red
-        Color(0xFF26070B), // dark wine
-        Color(0xFF050505), // deep black
+        Color(0x33C8102E),
+        Color(0xFF570914),
+        Color(0xFF26070B),
+        Color(0xFF050505),
       ],
       stops: const [0.0, 0.35, 0.7, 1.0],
     );
   }
 
-  /// Very gentle vertical fade variant of [darkGlow], for backgrounds where
-  /// a radial glow would be too focal (e.g. a full-screen hero backdrop).
+  /// Vertical fade variant of [darkGlow] for full-screen backdrops, where
+  /// a radial glow would be too focal.
   static const LinearGradient darkGlowVertical = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [Color(0xFF26070B), Color(0xFF050505)],
   );
 
-  /// Light-mode equivalent "featured" tint: soft white fading to a whisper
-  /// of brand-red-tinted white. Subtle -- not a visible diagonal gradient.
+  /// Light-mode equivalent: soft white fading to a whisper of brand red.
   static const LinearGradient lightFeatured = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
