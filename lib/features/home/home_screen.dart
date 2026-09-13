@@ -7,12 +7,13 @@ import '../../core/widgets/offline_banner.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/connectivity_provider.dart';
 import '../../providers/tour_provider.dart';
+import '../../services/tour_service.dart';
 import '../contacts/contacts_screen.dart';
 import '../history/call_history_screen.dart';
 import '../profile/profile_screen.dart';
 import 'home_tab.dart';
 
-/// Bottom-nav shell holding the four main sections of the app.
+/// The bottom-nav shell that holds the app's four main sections.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -48,10 +49,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _maybeStartTour() async {
     final uid = ref.read(authStateProvider).value?.uid;
-    if (uid == null || !mounted) return;
+    if (uid == null || !mounted) {
+      TourGate.resolvePending();
+      return;
+    }
     final tourService = ref.read(tourServiceProvider);
     final alreadyCompleted = await tourService.hasCompletedTour(uid);
-    if (alreadyCompleted || !mounted) return;
+    if (alreadyCompleted || !mounted) {
+      TourGate.resolvePending();
+      return;
+    }
 
     final steps = [
       TourStep(
@@ -119,11 +126,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       onFinish: () => _completeTour(uid),
       onSkip: () => _completeTour(uid),
     );
+    TourGate.start();
     _tour!.start(context);
   }
 
   Future<void> _completeTour(String uid) async {
     await ref.read(tourServiceProvider).markTourCompleted(uid);
+    TourGate.finish();
     if (mounted) _goToTab(0);
   }
 

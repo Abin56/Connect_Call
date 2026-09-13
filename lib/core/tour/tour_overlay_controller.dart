@@ -7,13 +7,13 @@ import '../theme/app_radius.dart';
 import '../theme/app_text_styles.dart';
 import 'tour_step.dart';
 
-/// Coach-mark tour over the existing app UI: a dark scrim with a spotlight
-/// cutout is inserted above the current screen via [Overlay], following
-/// each step's target widget. The underlying screen is never rebuilt.
+/// Shows a coach-mark tour over the app: a dark scrim with a spotlight cut
+/// out is dropped on top of the current screen via [Overlay], following
+/// each step's target widget. The screen underneath never gets rebuilt.
 ///
 /// [onGoToTab] switches the Home bottom-nav tab before measuring a step's
 /// target, since Contacts/Calls/Profile live in the same [IndexedStack] as
-/// Home rather than as separate routes.
+/// Home instead of being separate routes.
 class TourOverlayController {
   TourOverlayController({
     required this.steps,
@@ -123,6 +123,8 @@ class _TourStepViewState extends State<_TourStepView>
 
   Rect? _targetRect;
 
+  int _measureAttempts = 0;
+
   @override
   void initState() {
     super.initState();
@@ -133,14 +135,38 @@ class _TourStepViewState extends State<_TourStepView>
     if (!mounted) return;
     final renderObject = widget.step.key.currentContext?.findRenderObject();
     if (renderObject is! RenderBox || !renderObject.attached) {
-      // Target isn't mounted (tab still settling, or a conditional
-      // section like Recent Contacts is empty) -- skip this step.
+      // Target isn't on screen yet (tab still settling, or a section
+      // like Recent Contacts is empty) -- just skip this step.
       widget.onNext();
       return;
     }
     final topLeft = renderObject.localToGlobal(Offset.zero);
-    final rect = (topLeft & renderObject.size).inflate(widget.step.padding);
+    final screen = MediaQuery.of(context).size;
+    final rawRect = (topLeft & renderObject.size).inflate(widget.step.padding);
+    // Clamp to the screen so a target running edge-to-edge (or slightly
+    // past it, like under a system inset) never draws a spotlight or
+    // arrow pointing off-screen.
+    final rect = Rect.fromLTRB(
+      rawRect.left.clamp(0.0, screen.width),
+      rawRect.top.clamp(0.0, screen.height),
+      rawRect.right.clamp(0.0, screen.width),
+      rawRect.bottom.clamp(0.0, screen.height),
+    );
     setState(() => _targetRect = rect);
+    debugPrint(
+      'TOUR DEBUG step=${widget.stepNumber} '
+      'screen=$screen rawRect=$rawRect clampedRect=$rect '
+      'renderObjectSize=${renderObject.size} topLeft=$topLeft',
+    );
+
+    // The target's layout can still be settling on the very first frame
+    // (a tab switch still animating, or a list reflowing as data loads),
+    // which would leave the spotlight measured in the wrong spot. Keep
+    // re-measuring for a few more frames to catch up -- it's cheap once
+    // the position settles since setState is skipped when nothing changed.
+    if (_measureAttempts++ < 5) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _measure());
+    }
   }
 
   @override
@@ -187,7 +213,7 @@ class _TourStepViewState extends State<_TourStepView>
                 ),
               ),
             ),
-            // Blocks taps everywhere except the spotlighted widget.
+            // Blocks taps everywhere except on the spotlighted widget.
             Positioned.fill(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -215,8 +241,8 @@ class _TourStepViewState extends State<_TourStepView>
   }
 }
 
-/// Clips the blurred backdrop to everything except the spotlighted
-/// widget's bounds, so the target stays crisp against the dimmed screen.
+/// Cuts a hole in the blurred backdrop around the spotlighted widget, so
+/// the target stays crisp against the dimmed screen.
 class _ScrimClipper extends CustomClipper<Path> {
   _ScrimClipper({required this.rect});
 
@@ -274,7 +300,7 @@ class _SpotlightPainter extends CustomPainter {
     );
     canvas.drawPath(overlayPath, scrim);
 
-    // Soft outward glow behind the ring, breathing with [pulse].
+    // Soft glow around the ring that pulses in and out with [pulse].
     final glowRRect = RRect.fromRectAndRadius(
       rect!.inflate(2 + pulse * 4),
       Radius.circular(AppRadius.md + pulse * 4),
@@ -288,7 +314,7 @@ class _SpotlightPainter extends CustomPainter {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
     );
 
-    // Crisp accent ring hugging the actual spotlight cutout.
+    // Sharp accent ring right along the spotlight cutout.
     canvas.drawRRect(
       baseRRect,
       Paint()
@@ -342,13 +368,15 @@ class _Tooltip extends StatelessWidget {
     final spaceBelow = screenSize.height - targetRect.bottom;
     final placeBelow = spaceBelow > 180 || targetRect.top < 180;
 
-    final left = (targetRect.left)
+    // Center the card above or below the target, then clamp so it
+    // stays on screen.
+    final targetCenterX = targetRect.left + targetRect.width / 2;
+    final left = (targetCenterX - _cardWidth / 2)
         .clamp(_margin, screenSize.width - _cardWidth - _margin)
         .toDouble();
 
-    // Keep the arrow pointing at the target center even when the card
-    // itself is clamped to stay on-screen.
-    final targetCenterX = targetRect.left + targetRect.width / 2;
+    // Keep the arrow pointing at the target's center even when the card
+    // gets shifted to stay on screen.
     final arrowLeft = (targetCenterX - left).clamp(24.0, _cardWidth - 24.0);
 
     return AnimatedPositioned(

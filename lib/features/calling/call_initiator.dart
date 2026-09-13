@@ -12,12 +12,12 @@ import '../../providers/call_history_provider.dart';
 import '../../providers/calling_provider.dart';
 import '../../providers/connectivity_provider.dart';
 
-/// Places a call to [peer] via ZEGOCLOUD's invitation service and records
-/// it in Firestore call history.
+/// Places a call to [peer] through ZEGOCLOUD's invitation service and
+/// saves it to Firestore call history.
 ///
 /// Shared by every screen with a call button (Contacts, Home's Frequently
-/// Called) so the offline/permission/blocked gates and history write only
-/// live in one place.
+/// Called) so the offline check, permission check, block check, and
+/// history write all live in exactly one place.
 Future<void> startCall(
   BuildContext context,
   WidgetRef ref,
@@ -63,9 +63,9 @@ Future<void> startCall(
   );
   if (!context.mounted || !granted) return;
 
-  // Generated up front instead of letting ZEGOCLOUD auto-generate one, so
-  // it can be written to Firestore as `zegoCallId` immediately and the
-  // receiver can resolve the same doc via `ZegoCallInvitationData.callID`.
+  // We generate this ourselves instead of letting ZEGOCLOUD auto-generate
+  // one, so we can save it to Firestore as `zegoCallId` right away, and
+  // the receiver can look up the same doc via `ZegoCallInvitationData.callID`.
   final zegoCallId = 'call_${me.uid}_${DateTime.now().millisecondsSinceEpoch}';
 
   final sent = await ZegoUIKitPrebuiltCallInvitationService().send(
@@ -83,10 +83,10 @@ Future<void> startCall(
     return;
   }
 
-  // The invitation is already sent at this point, and there's no "unsend"
-  // in the ZEGOCLOUD API. If the Firestore write fails, CallingService has
-  // no doc id to attach later status updates to, so we surface the error
-  // and let the call continue untracked rather than block the user.
+  // The invitation has already gone out, and there's no "unsend" in the
+  // ZEGOCLOUD API. If this Firestore write fails, CallingService won't
+  // have a doc id to attach later status updates to -- so we just warn
+  // the user and let the call carry on untracked instead of blocking them.
   try {
     final callId = await ref
         .read(callServiceProvider)

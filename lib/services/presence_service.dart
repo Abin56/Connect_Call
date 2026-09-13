@@ -2,14 +2,15 @@ import 'package:flutter/widgets.dart';
 
 import 'user_service.dart';
 
-/// Keeps a signed-in user's Firestore `isOnline` flag in sync with the app's
-/// foreground/background state, so presence doesn't get stuck "online"
-/// after the app is backgrounded or killed.
+/// Keeps a signed-in user's Firestore `isOnline` flag in sync with whether
+/// the app is in the foreground or background, so people don't stay stuck
+/// showing "online" after backgrounding or closing the app.
 ///
-/// [AppLifecycleState.detached] isn't guaranteed on a hard kill/crash --
-/// there's no reliable client-side hook for that. [resumed]/[paused] cover
-/// the common backgrounding case, which is what the contacts screen's
-/// online/offline sections mostly need to be accurate for.
+/// [AppLifecycleState.detached] isn't guaranteed to fire on a hard kill or
+/// crash -- there's no reliable way to catch that from the client.
+/// [resumed]/[paused] cover the common case of backgrounding the app,
+/// which is what really matters for the online/offline sections on the
+/// contacts screen.
 class PresenceService with WidgetsBindingObserver {
   final UserService _userService;
 
@@ -55,7 +56,7 @@ class PresenceService with WidgetsBindingObserver {
   void _setOnline(bool isOnline) {
     final userId = _userId;
     if (userId == null) return;
-    // Best-effort: presence is advisory, never worth surfacing an error for.
+    // Best effort: presence is just a nice-to-have, not worth erroring over.
     _userService.setOnlineStatus(userId, isOnline).catchError((_) {});
   }
 }

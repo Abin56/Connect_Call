@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 
 import 'app_alert_dialog.dart';
 
-/// What a [PermissionRationaleDialog] is being shown for -- controls icon
-/// and copy.
+/// What the permission dialog is being shown for -- decides its icon and text.
 enum PermissionPromptKind { microphone, camera, both }
 
-/// Branded replacement for asking the OS for camera/mic permission cold.
-/// Built on [AppAlertDialog] so it reads as this app's own explanation
-/// rather than a second, unrelated permission system.
+/// Explains why we need camera/mic access before the OS asks cold. Built
+/// on [AppAlertDialog] so it feels like part of the app, not some
+/// unrelated system popup.
 ///
 /// Returns `true` if the user tapped "Continue", `false` otherwise
-/// (including dismissal).
+/// (including if they just dismissed it).
 Future<bool> showPermissionRationaleDialog(
   BuildContext context, {
   required PermissionPromptKind kind,
@@ -47,9 +46,9 @@ Future<bool> showPermissionRationaleDialog(
   ).then((result) => result ?? false);
 }
 
-/// Shown after the native prompt has already denied the permission --
-/// distinct copy/actions from the pre-prompt rationale above. Returns
-/// `true` only if the user chose to open Settings.
+/// Shown after the native prompt already got denied -- different text and
+/// actions from the rationale dialog above. Returns `true` only if the
+/// user chose to open Settings.
 Future<bool> showPermissionDeniedDialog(
   BuildContext context, {
   required PermissionPromptKind kind,

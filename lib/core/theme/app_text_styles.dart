@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
-/// Reusable text styles so screens don't redefine font sizes/weights ad hoc.
-/// Built on Plus Jakarta Sans for a premium, confident type feel.
+/// Reusable text styles so screens don't each redefine their own font
+/// sizes and weights. Built on Plus Jakarta Sans for a clean, confident look.
 class AppTextStyles {
   AppTextStyles._();
 
@@ -24,9 +24,10 @@ class AppTextStyles {
     );
   }
 
-  // No color set here -- these inherit from the active ThemeData so the
-  // same styles work in both light and dark mode. Use the OnDark variants
-  // below for surfaces that are always dark regardless of app theme.
+  // No color set here on purpose -- these pick up the color from the
+  // active theme, so the same style works in both light and dark mode.
+  // Use the OnDark variants below for surfaces that are always dark no
+  // matter the app's theme.
   static TextStyle heading1 = _jakarta(
     fontSize: 28,
     fontWeight: FontWeight.w700,
@@ -66,15 +67,15 @@ class AppTextStyles {
     color: AppColorsDark.textPrimary,
   );
 
-  /// Emphasized state text (call duration, connection status).
+  /// Bolder text for things like call duration or connection status.
   static TextStyle statusEmphasis = _jakarta(
     fontSize: 16,
     fontWeight: FontWeight.w700,
     color: AppColorsDark.textPrimary,
   );
 
-  // Dark-surface variants, for near-black backgrounds like splash and hero
-  // cards, regardless of the active theme.
+  // Variants for dark surfaces, like splash and hero cards, that stay
+  // near-black no matter which theme is active.
   static TextStyle heading1OnDark = heading1.copyWith(color: Colors.white);
   static TextStyle heading2OnDark = heading2.copyWith(color: Colors.white);
   static TextStyle heading3OnDark = heading3.copyWith(color: Colors.white);

@@ -6,10 +6,10 @@ import 'package:flutter/foundation.dart';
 import '../core/constants/app_constants.dart';
 import '../models/call_model.dart';
 
-/// Firestore operations for call history records. Signaling for "who is
-/// calling whom right now" is handled by ZEGOCLOUD's own call-invitation
-/// system (see CallingService) — this service only persists the resulting
-/// history entries.
+/// Firestore reads and writes for call history records. Figuring out "who
+/// is calling whom right now" is handled by ZEGOCLOUD's own call-invitation
+/// system (see CallingService) -- this service just saves the history
+/// that comes out of that.
 class CallService {
   final FirebaseFirestore _firestore;
 
@@ -38,10 +38,10 @@ class CallService {
     return _calls.doc(callId).update(updates);
   }
 
-  /// Fallback "call ended" write for when the caller-owned write might not
-  /// run, e.g. the caller's own device lost the call first. Resolves the
-  /// doc by [zegoCallId] and only writes if it's still `connected`, so a
-  /// late write never overwrites an already-terminal status.
+  /// A backup "call ended" write for when the caller's own write might not
+  /// happen, say if the caller's device lost the call first. Finds the doc
+  /// by [zegoCallId] and only writes if it's still `connected`, so a late
+  /// write never overwrites a status that's already final.
   Future<void> endConnectedCall(
     String zegoCallId, {
     required DateTime endedAt,
@@ -55,8 +55,8 @@ class CallService {
     );
   }
 
-  /// Same fallback path as [endConnectedCall], but for mid-call network loss
-  /// reported by the receiver's device rather than a clean hangup.
+  /// Same backup path as [endConnectedCall], but for a mid-call network
+  /// drop reported by the receiver's device rather than a clean hangup.
   Future<void> disconnectConnectedCall(
     String zegoCallId, {
     required DateTime endedAt,
@@ -94,9 +94,9 @@ class CallService {
     });
   }
 
-  /// All calls involving [userId], newest first. Runs as-caller and
-  /// as-receiver queries separately and merges client-side, since Firestore
-  /// can't OR across two fields in one query.
+  /// All calls involving [userId], newest first. Runs the "as caller" and
+  /// "as receiver" queries separately and merges them on the client,
+  /// since Firestore can't OR across two fields in one query.
   Stream<List<CallModel>> watchCallHistory(String userId) {
     late final StreamController<List<CallModel>> controller;
     List<QueryDocumentSnapshot<Map<String, dynamic>>>? callerDocs;
@@ -108,8 +108,8 @@ class CallService {
       if (callerDocs == null || receiverDocs == null) return;
       final calls = <String, CallModel>{};
       for (final doc in [...callerDocs!, ...receiverDocs!]) {
-        // Skip a malformed doc (e.g. an unrecognized enum value) rather than
-        // taking down the whole merged history stream.
+        // Skip a broken doc (like an unrecognized enum value) instead of
+        // breaking the whole merged history stream.
         try {
           calls[doc.id] = CallModel.fromMap(doc.id, doc.data());
         } on FormatException catch (error) {

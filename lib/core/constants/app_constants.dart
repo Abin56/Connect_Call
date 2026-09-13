@@ -1,12 +1,12 @@
-/// App-wide constant values that aren't secrets (spacing, Firestore
-/// collection names, etc). Real secrets live in [ZegoConstants].
+/// App-wide constants that aren't secrets, like spacing and Firestore
+/// collection names. Actual secrets live in [ZegoConstants].
 class AppConstants {
   AppConstants._();
 
   static const String appName = 'ConnectCall';
 
-  // Firestore collection names, kept in one place so a rename doesn't
-  // require hunting through every service file.
+  // Firestore collection names live here so renaming one doesn't mean
+  // hunting through every service file.
   static const String usersCollection = 'users';
   static const String callsCollection = 'calls';
 }

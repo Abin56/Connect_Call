@@ -45,8 +45,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-      // We're not routed back through SplashScreen here, so push directly
-      // instead of relying on its authStateProvider listener.
+      // We skip SplashScreen here, so navigate directly instead of relying
+      // on its authStateProvider listener.
       if (mounted) {
         Navigator.of(
           context,
@@ -71,7 +71,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Glow behind the logo is dark-mode only.
+                // The glow behind the logo only shows up in dark mode.
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 56, 24, 32),
@@ -152,8 +152,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           return null;
                         },
                       ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () => Navigator.of(
+                            context,
+                          ).pushNamed(AppRoutes.forgotPassword),
+                          child: const Text('Forgot password?'),
+                        ),
+                      ),
                       if (_errorMessage != null) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
                         Text(
                           _errorMessage!,
                           style: AppTextStyles.bodyMuted.copyWith(
@@ -162,7 +171,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           textAlign: TextAlign.center,
                         ),
                       ],
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       AppButton(
                         label: 'Login',
                         onPressed: _submit,

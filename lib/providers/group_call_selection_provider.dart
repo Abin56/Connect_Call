@@ -2,10 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/user_model.dart';
 
-/// Selected-contacts state for the "New Group Call" flow (Select Contacts
-/// screen). Kept as its own small provider rather than folded into
-/// [contactSearchQueryProvider]/[filteredContactsProvider] so 1-to-1 contact
-/// search/browsing is untouched by group-call selection.
+/// Tracks who's selected in the "New Group Call" flow (the Select
+/// Contacts screen). Kept as its own small provider instead of folded
+/// into [contactSearchQueryProvider]/[filteredContactsProvider], so
+/// group-call selection doesn't touch normal 1-to-1 contact search/browsing.
 class GroupCallSelectionNotifier extends Notifier<List<UserModel>> {
   @override
   List<UserModel> build() => const [];
@@ -29,6 +29,6 @@ final groupCallSelectionProvider =
       GroupCallSelectionNotifier.new,
     );
 
-/// Minimum invitees required to start a group call (the initiator makes a
-/// third participant, so 2 invitees = a 3-person call).
+/// The minimum number of invitees to start a group call. The initiator
+/// counts as a participant too, so 2 invitees means a 3-person call.
 const minGroupCallInvitees = 2;

@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/app_constants.dart';
 import '../models/user_model.dart';
 
-/// Firestore operations for user profiles, contacts list, and presence.
+/// Firestore reads and writes for user profiles, the contacts list, and presence.
 class UserService {
   final FirebaseFirestore _firestore;
 
@@ -28,9 +28,9 @@ class UserService {
         );
   }
 
-  /// All other users, ordered by name. Filters out [currentUserId]
-  /// client-side since the contact list is small enough to not need
-  /// pagination.
+  /// All other users, ordered by name. [currentUserId] is filtered out
+  /// on the client since the contact list is small enough that we don't
+  /// need pagination.
   Stream<List<UserModel>> watchContacts(String currentUserId) {
     return _users
         .orderBy('name')

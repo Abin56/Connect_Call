@@ -26,8 +26,8 @@ void main() {
 
     expect(container.read(themeModeProvider).value, ThemeMode.dark);
 
-    // A fresh container simulates an app restart -- it should pick up the
-    // persisted choice rather than defaulting back to system.
+    // A fresh container simulates an app restart -- it should load the
+    // saved choice instead of defaulting back to system.
     final restarted = ProviderContainer();
     addTearDown(restarted.dispose);
     final reloaded = await restarted.read(themeModeProvider.future);

@@ -48,7 +48,7 @@ class ProfileScreen extends ConsumerWidget {
             padding: EdgeInsets.zero,
             child: Column(
               children: [
-                // Glow treatment matches Home's call CTA and the auth screens.
+                // Same glow style as Home's call button and the auth screens.
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
@@ -165,7 +165,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-/// System / Light / Dark segmented picker, backed by [themeModeProvider].
+/// A System / Light / Dark picker, backed by [themeModeProvider].
 class _ThemeModeSelector extends ConsumerWidget {
   const _ThemeModeSelector({super.key});
 

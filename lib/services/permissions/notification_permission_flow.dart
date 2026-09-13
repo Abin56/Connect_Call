@@ -4,22 +4,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/widgets/app_alert_dialog.dart';
 
-/// Contextual notification-permission prompt, deliberately separate from
-/// [CallPermissionFlow] (mic/camera) -- different permission, different
-/// purpose (incoming-call alerts while backgrounded), so it shouldn't be
-/// bundled into the same rationale.
+/// Asks for notification permission at the right moment, kept separate
+/// from [CallPermissionFlow] (mic/camera) since it's a different
+/// permission for a different reason (incoming-call alerts in the
+/// background).
 ///
 /// Triggered once, right after calling is set up for this user (see
-/// `main.dart`'s auth listener), which is the first moment notifications
-/// are actually relevant -- not on first app launch or during login.
+/// `main.dart`'s auth listener) -- that's the first moment notifications
+/// actually matter, not on first launch or during login.
 class NotificationPermissionFlow {
   const NotificationPermissionFlow();
 
   static const _askedPrefsKey = 'notification_permission_asked';
 
-  /// Shows the rationale and requests notification permission, but only if
-  /// it's undecided and hasn't been offered before -- otherwise returning
-  /// users would get re-prompted every time calling re-initializes.
+  /// Shows the rationale and asks for notification permission, but only
+  /// if it's still undecided and we haven't asked before -- otherwise
+  /// returning users would get re-prompted every time calling restarts.
   Future<void> maybeRequest(BuildContext context) async {
     final status = await Permission.notification.status;
     if (status.isGranted || status.isPermanentlyDenied || status.isRestricted) {

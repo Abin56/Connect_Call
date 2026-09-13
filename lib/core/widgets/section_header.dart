@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_text_styles.dart';
 
-/// Small label used to introduce a grouped section of a list (e.g. "Online",
-/// "Today"), with an optional trailing widget (a count, an action).
+/// A small label introducing a section of a list, like "Online" or
+/// "Today", with an optional widget on the trailing side (a count, an action).
 class SectionHeader extends StatelessWidget {
   final String label;
   final Widget? trailing;

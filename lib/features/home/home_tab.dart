@@ -17,8 +17,9 @@ import '../history/widgets/call_history_tile.dart';
 import '../profile/profile_screen.dart';
 import 'widgets/recent_contacts_section.dart';
 
-/// Landing tab: greets the user, offers a fast path into Contacts, and
-/// previews recent calls/contacts. Full lists live on their own tabs.
+/// The landing tab: greets the user, gives a quick way into Contacts,
+/// and previews recent calls and contacts. The full lists live on their
+/// own tabs.
 class HomeTab extends ConsumerWidget {
   final VoidCallback onGoToContacts;
   final GlobalKey? startCallKey;
@@ -121,8 +122,8 @@ class HomeTab extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Dark mode gets the black/red glow; light mode gets a softer
-            // white-to-red tint so it doesn't read as a dark island.
+            // Dark mode gets a black/red glow; light mode gets a softer
+            // white-to-red tint so it doesn't look like a dark hole.
             Builder(
               key: startCallKey,
               builder: (context) {
@@ -303,8 +304,8 @@ class HomeTab extends ConsumerWidget {
   }
 }
 
-/// Deliberately a quieter, secondary card below the featured "Start a call"
-/// CTA -- group calling is used less often than a direct 1-to-1 call.
+/// A quieter card that sits below the main "Start a call" button on
+/// purpose -- group calling gets used less than a direct 1-to-1 call.
 class _GroupCallCta extends StatelessWidget {
   final VoidCallback onTap;
 
@@ -381,8 +382,8 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Translucent glass look so it doesn't compete with the card's own red;
-    // tint flips white/black-on-glass to stay visible in both themes.
+    // A frosted-glass look so it doesn't clash with the card's own red;
+    // the tint flips between white and black to stay visible in both themes.
     final labelColor = isDark ? Colors.white : AppColors.nearBlack;
     return Material(
       color: isDark

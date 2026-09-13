@@ -3,8 +3,8 @@ import 'package:zego_express_engine/zego_express_engine.dart';
 
 import '../theme/app_colors.dart';
 
-/// Coarse Good/Fair/Poor bucketing of ZEGOCLOUD's own
-/// [ZegoStreamQualityLevel], so the call screen doesn't need to know about
+/// Simplifies ZEGOCLOUD's own [ZegoStreamQualityLevel] down to just
+/// Good/Fair/Poor, so the call screen doesn't need to know about
 /// ZEGOCLOUD's five-level scale directly.
 enum NetworkQuality { good, fair, poor }
 

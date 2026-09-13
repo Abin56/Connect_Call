@@ -14,7 +14,7 @@ final currentUserProfileProvider = StreamProvider<UserModel?>((ref) {
   return ref.watch(userServiceProvider).watchUser(uid);
 });
 
-/// A single user's profile by id, e.g. for showing a blocked user's name.
+/// A single user's profile by id, used for things like showing a blocked user's name.
 final userByIdProvider = FutureProvider.family<UserModel?, String>((
   ref,
   userId,
@@ -43,15 +43,16 @@ final contactSearchQueryProvider =
       ContactSearchQueryNotifier.new,
     );
 
-/// Contacts filtered by [contactSearchQueryProvider] (matched on name or
-/// email). Simple client-side filtering — sufficient for the assignment's
-/// scale and avoids standing up a search index.
+/// Contacts filtered by [contactSearchQueryProvider], matching on name or
+/// email. Just simple client-side filtering -- plenty for this app's
+/// scale, and it avoids setting up a whole search index.
 ///
-/// Contacts the signed-in person has blocked are kept in the list (rather
-/// than removed) so Contacts can show them muted with an Unblock action --
-/// see [UserTile]/`ContactsScreen`. Someone who has blocked *me* still shows
-/// up in my list too (I don't know I've been blocked; the call itself is
-/// what's actually prevented, in both directions, at call time).
+/// Contacts the signed-in person has blocked stay in the list instead of
+/// being removed, so Contacts can show them greyed out with an Unblock
+/// button -- see [UserTile]/`ContactsScreen`. Someone who has blocked
+/// *me* still shows up in my list too, since I have no way of knowing
+/// I've been blocked -- the call itself is what actually gets stopped,
+/// in both directions, when someone tries to call.
 final filteredContactsProvider = Provider<AsyncValue<List<UserModel>>>((ref) {
   final contacts = ref.watch(contactsProvider);
   final query = ref.watch(contactSearchQueryProvider).trim().toLowerCase();

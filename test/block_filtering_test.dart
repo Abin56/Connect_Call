@@ -9,9 +9,9 @@ UserModel _user(String id, String name) =>
     UserModel(id: id, name: name, email: '$id@example.com');
 
 /// Waits for [provider] to leave its loading state, by listening rather
-/// than awaiting `.future` (which has proven flaky against a plain
-/// `Stream.value` source in this Riverpod version -- it can time out
-/// instead of resolving on the stream's first, only event).
+/// than awaiting `.future` -- that's proven flaky against a plain
+/// `Stream.value` source in this Riverpod version, sometimes timing out
+/// instead of resolving on the stream's one and only event.
 Future<void> _waitForData<T>(
   ProviderContainer container,
   StreamProvider<T> provider,

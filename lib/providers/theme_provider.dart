@@ -5,10 +5,10 @@ import '../services/theme_service.dart';
 
 final themeServiceProvider = Provider<ThemeService>((ref) => ThemeService());
 
-/// The app's active [ThemeMode] (System/Light/Dark), loaded from local
-/// storage on startup and persisted whenever the user changes it in
-/// Settings. Defaults to [ThemeMode.system] until the stored value loads,
-/// then again if none was ever saved.
+/// The app's active [ThemeMode] (System/Light/Dark). Loaded from local
+/// storage on startup, and saved back whenever the user changes it in
+/// Settings. Defaults to [ThemeMode.system] while the stored value is
+/// loading, and again if nothing was ever saved.
 class ThemeModeNotifier extends AsyncNotifier<ThemeMode> {
   @override
   Future<ThemeMode> build() {

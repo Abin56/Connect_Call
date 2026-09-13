@@ -13,8 +13,8 @@ import 'widgets/call_history_tile.dart';
 class CallHistoryScreen extends ConsumerWidget {
   const CallHistoryScreen({super.key});
 
-  /// Groups [calls] (already newest-first) under "Today" / "Yesterday" /
-  /// a formatted date, preserving order within each group.
+  /// Groups [calls] (already newest first) under "Today", "Yesterday",
+  /// or a formatted date, keeping the order within each group.
   static Map<String, List<CallModel>> _groupByDay(List<CallModel> calls) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);

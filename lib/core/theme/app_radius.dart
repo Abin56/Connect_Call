@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Centralized corner-radius scale. Different component families use
-/// different steps deliberately (chips are fully round, dialogs use a
-/// single large radius, etc.) — see call sites for which step applies.
+/// The app's shared set of corner radius values. Different components use
+/// different steps on purpose (chips are fully round, dialogs use one
+/// big radius, and so on) -- check where each one's used to see which fits.
 class AppRadius {
   AppRadius._();
 

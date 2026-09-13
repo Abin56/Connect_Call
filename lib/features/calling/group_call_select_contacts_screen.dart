@@ -13,8 +13,9 @@ import '../../providers/group_call_selection_provider.dart';
 import '../../providers/user_provider.dart';
 import 'group_call_initiator.dart';
 
-/// Pick 2+ contacts, then start an audio or video group call.
-/// UI/selection only -- [startGroupCall] handles the actual invitation.
+/// Pick 2 or more contacts, then start an audio or video group call.
+/// This screen only handles picking people -- [startGroupCall] sends the
+/// actual invitation.
 class GroupCallSelectContactsScreen extends ConsumerWidget {
   const GroupCallSelectContactsScreen({super.key});
 

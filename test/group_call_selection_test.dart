@@ -69,8 +69,8 @@ void main() {
     });
 
     test('minGroupCallInvitees requires at least 2 invitees', () {
-      // A 3-person call is the initiator + 2 invitees, so the UI gate
-      // (selected.length >= minGroupCallInvitees) must require 2, not 1.
+      // A 3-person call is the initiator plus 2 invitees, so the UI check
+      // (selected.length >= minGroupCallInvitees) needs to require 2, not 1.
       expect(minGroupCallInvitees, 2);
     });
   });

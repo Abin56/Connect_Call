@@ -28,8 +28,8 @@ void main() {
 
     test('persists across separate service instances', () async {
       await ThemeService().saveThemeMode(ThemeMode.dark);
-      // A fresh instance (e.g. after an app restart) must read the same
-      // persisted value rather than any in-memory state on the first one.
+      // A fresh instance (like after an app restart) should read back the
+      // same saved value, not any leftover in-memory state from the first one.
       final reloaded = await ThemeService().loadThemeMode();
       expect(reloaded, ThemeMode.dark);
     });

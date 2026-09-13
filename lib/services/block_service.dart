@@ -2,15 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/constants/app_constants.dart';
 
-/// Firestore operations for user blocking.
+/// Firestore reads and writes for blocking users.
 ///
 /// Stored as `users/{userId}/blocked/{blockedUserId}`, a subcollection
-/// rather than a top-level `blocked_users` collection -- keeps "does A
-/// block B" a single doc read, and lets Firestore rules restrict writes to
-/// `request.auth.uid == userId`.
+/// rather than a top-level `blocked_users` collection -- that way "does A
+/// block B" is a single doc read, and Firestore rules can simply restrict
+/// writes to `request.auth.uid == userId`.
 ///
-/// Blocking is one-directional data, but the call-prevention rule isn't:
-/// [isBlockedEitherWay] checks both directions.
+/// Blocking itself only goes one way, but the rule for stopping calls
+/// doesn't: [isBlockedEitherWay] checks both directions.
 class BlockService {
   final FirebaseFirestore _firestore;
 
@@ -33,21 +33,22 @@ class BlockService {
     return _blockedCollection(userId).doc(blockedUserId).delete();
   }
 
-  /// Live "did [userId] block [otherUserId]" flag, for the block/unblock button.
+  /// Live "did [userId] block [otherUserId]" flag, used for the block/unblock button.
   Stream<bool> watchIsBlocked(String userId, String otherUserId) {
     return _blockedCollection(
       userId,
     ).doc(otherUserId).snapshots().map((doc) => doc.exists);
   }
 
-  /// All user ids [userId] has blocked, for filtering contacts/search.
+  /// All user ids [userId] has blocked, used to filter contacts and search.
   Stream<Set<String>> watchBlockedIds(String userId) {
     return _blockedCollection(
       userId,
     ).snapshots().map((snapshot) => snapshot.docs.map((d) => d.id).toSet());
   }
 
-  /// True if either user has blocked the other -- the actual call-gating check.
+  /// True if either user has blocked the other -- this is the actual
+  /// check used to decide if a call is allowed.
   Future<bool> isBlockedEitherWay(String userIdA, String userIdB) async {
     final results = await Future.wait([
       _blockedCollection(userIdA).doc(userIdB).get(),

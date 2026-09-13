@@ -9,9 +9,9 @@ import '../../../models/user_model.dart';
 import '../../../providers/recent_contacts_provider.dart';
 import '../../../providers/user_provider.dart';
 
-/// "Frequently called" row on Home: up to 5 people the user calls most,
-/// derived from call history, with a tap-to-call button each.
-/// Renders nothing when there's no history yet rather than an empty section.
+/// The "Frequently called" row on Home: up to 5 people the user calls
+/// most, worked out from call history, each with a tap-to-call button.
+/// Shows nothing at all when there's no history yet.
 class RecentContactsSection extends ConsumerWidget {
   final void Function(UserModel user, {required bool isVideoCall}) onCall;
 
@@ -73,8 +73,8 @@ class _RecentContactCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Slightly elevated card so "frequently called" stands out a bit
-    // without competing with the Home CTA's red-glow treatment.
+    // A bit of elevation so "frequently called" stands out without
+    // competing with the Home button's red glow.
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: 108,

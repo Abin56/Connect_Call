@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Central color palette for the Sankar Group brand identity: black/charcoal
-/// (dark) or white/grey (light) surfaces with a brand red accent. Prefer
-/// `Theme.of(context)` over referencing these directly, except where a
-/// color needs to stay fixed regardless of brightness.
+/// The Sankar Group brand colors: black/charcoal (dark) or white/grey
+/// (light) surfaces with a red accent. Prefer `Theme.of(context)` over
+/// using these directly, except where a color needs to stay the same no
+/// matter the theme.
 class AppColors {
   AppColors._();
 
@@ -46,9 +46,9 @@ class AppColors {
   static const Color muted = darkElevated;
 }
 
-/// Dark-theme counterpart. Surfaces step up through layered near-black
-/// tiers (background < surface < card < elevated) so cards and dialogs
-/// stay readable, without ever using pure black.
+/// The dark-theme version of the palette. Surfaces step up through
+/// layered near-black shades (background < surface < card < elevated) so
+/// cards and dialogs stay readable without ever using pure black.
 class AppColorsDark {
   AppColorsDark._();
 
@@ -85,22 +85,22 @@ class AppColorsDark {
   static const Color muted = elevated;
 }
 
-/// Theme-correct "online" presence color, so call sites don't have to pick
-/// between [AppColors.online] and [AppColorsDark.online] by hand.
+/// The right "online" color for the current theme, so callers don't have
+/// to pick between [AppColors.online] and [AppColorsDark.online] by hand.
 extension AppColorsBrightness on BuildContext {
   Color get onlineColor => Theme.of(this).brightness == Brightness.dark
       ? AppColorsDark.online
       : AppColors.online;
 }
 
-/// Atmospheric gradients for the "featured" brand moments (Home call CTA,
-/// Profile header, Login/Register hero, Splash logo). Subtle glow, not a
-/// bold banner.
+/// Soft glow gradients for the app's "featured" brand moments (Home's
+/// call button, the Profile header, Login/Register, the Splash logo).
+/// Meant to be a subtle glow, not a bold banner.
 class AppGradients {
   AppGradients._();
 
-  /// Dark-mode glow: near-black edges with a faint warm red core.
-  /// [center] moves the focal point behind a logo, avatar, etc.
+  /// Dark-mode glow: near-black edges with a faint warm red center.
+  /// [center] moves the focal point behind a logo, avatar, and so on.
   static RadialGradient darkGlow({Alignment center = Alignment.topCenter}) {
     return RadialGradient(
       center: center,
@@ -115,15 +115,15 @@ class AppGradients {
     );
   }
 
-  /// Vertical fade variant of [darkGlow] for full-screen backdrops, where
-  /// a radial glow would be too focal.
+  /// A vertical-fade version of [darkGlow] for full-screen backgrounds,
+  /// where a radial glow would draw too much focus.
   static const LinearGradient darkGlowVertical = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [Color(0xFF26070B), Color(0xFF050505)],
   );
 
-  /// Light-mode equivalent: soft white fading to a whisper of brand red.
+  /// The light-mode version: soft white fading to just a hint of brand red.
   static const LinearGradient lightFeatured = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,

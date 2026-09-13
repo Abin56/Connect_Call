@@ -12,7 +12,7 @@ import '../../providers/block_provider.dart';
 import '../../providers/user_provider.dart';
 
 /// Lists everyone the signed-in user has blocked, each with an Unblock
-/// action. Reached from Profile > Privacy > Blocked users.
+/// button. Reached from Profile > Privacy > Blocked users.
 class BlockedUsersScreen extends ConsumerWidget {
   const BlockedUsersScreen({super.key});
 
@@ -90,8 +90,8 @@ class _BlockedUserTile extends ConsumerWidget {
       loading: () => const SizedBox.shrink(),
       error: (error, _) => const SizedBox.shrink(),
       data: (user) {
-        // The blocked account may have since been deleted -- show the id
-        // rather than hiding the row, since Unblock should still work.
+        // That account may have been deleted since -- show a placeholder
+        // instead of hiding the row, since Unblock should still work.
         final name = user?.name ?? 'Unknown user';
         return Card(
           child: Padding(

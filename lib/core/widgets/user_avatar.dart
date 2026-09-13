@@ -2,8 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-/// Circular avatar with an online/offline presence dot. Falls back to the
-/// user's initial when there's no profile image.
+/// A round avatar with an online/offline dot. Shows the user's initial
+/// when there's no profile picture.
 class UserAvatar extends StatelessWidget {
   final String name;
   final String? imageUrl;

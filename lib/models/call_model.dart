@@ -40,13 +40,13 @@ class CallModel {
     this.zegoCallId,
   });
 
-  /// True when [userId] placed the call rather than received it.
+  /// True if [userId] placed this call instead of receiving it.
   bool isOutgoingFor(String userId) => callerId == userId;
 
-  /// Throws [FormatException] for an unrecognized `callType`/`status` (e.g. a
-  /// newer app version wrote an enum value this build predates). Catch this
-  /// per-document in [CallService.watchCallHistory] so one bad record doesn't
-  /// kill the whole history stream.
+  /// Throws [FormatException] if `callType` or `status` is a value we
+  /// don't recognize (say, a newer app version wrote an enum value this
+  /// build doesn't know about yet). [CallService.watchCallHistory] catches
+  /// this per document so one bad record doesn't break the whole history list.
   factory CallModel.fromMap(String id, Map<String, dynamic> map) {
     try {
       return CallModel(

@@ -1,9 +1,9 @@
 // Checks that error states use the shared AppError widget with a working
-// retry action, instead of a bare error Text.
+// retry button, instead of just a plain error Text.
 //
 // Doesn't pump a full ProfileScreen/HomeTab since both need
 // Firebase.initializeApp, which isn't available in tests (see
-// widget_test.dart). Tests AppError and provider-level retry directly.
+// widget_test.dart). Tests AppError and the provider-level retry directly instead.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -64,7 +64,7 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     expect(sub.read().hasError, isTrue);
 
-    // Simulates the AppError's onRetry: () => ref.invalidate(callHistoryProvider).
+    // Mimics AppError's onRetry: () => ref.invalidate(callHistoryProvider).
     container.invalidate(callHistoryProvider);
     await Future<void>.delayed(Duration.zero);
 

@@ -4,25 +4,24 @@ import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_text_styles.dart';
 
-/// Visual style for a [CallControlButton].
+/// The look of a [CallControlButton].
 enum CallControlVariant {
-  /// Neutral control in its default (off/inactive) state.
+  /// The default, off/inactive look.
   neutral,
 
-  /// Neutral control toggled on (e.g. speaker enabled) — brand accent.
+  /// A neutral control that's toggled on (like speaker enabled) — brand color.
   active,
 
-  /// Destructive action (end call, decline).
+  /// A destructive action, like ending or declining a call.
   danger,
 
-  /// Constructive action (accept call) — brand accent, larger by convention.
+  /// An accept action (answering a call) — brand color, bigger by convention.
   accept,
 }
 
-/// Circular icon button used on call screens (incoming/audio/video):
-/// mute, speaker, camera, switch camera, accept, decline, end call.
-/// Optionally shows a text label underneath, matching common call-UI
-/// conventions.
+/// A round icon button used on call screens for things like mute,
+/// speaker, camera, switch camera, accept, decline, and end call.
+/// Can optionally show a text label underneath, like most call UIs do.
 class CallControlButton extends StatelessWidget {
   final IconData icon;
   final String? label;
@@ -88,8 +87,8 @@ class CallControlButton extends StatelessWidget {
   }
 }
 
-/// Fully rounded pill container for grouping call controls at the bottom of
-/// a call screen (e.g. the video-call control dock).
+/// A rounded pill that groups call controls together at the bottom of a
+/// call screen, like the video-call control dock.
 class CallControlDock extends StatelessWidget {
   final List<Widget> children;
 

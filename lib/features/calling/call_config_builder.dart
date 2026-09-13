@@ -2,12 +2,12 @@ import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 
 import 'widgets/network_quality_badge.dart';
 
-/// Builds the [ZegoUIKitPrebuiltCallConfig] used for the live call screen,
-/// for both caller/callee and 1-to-1/group calls.
+/// Builds the call screen config for both caller and callee, and for
+/// 1-to-1 or group calls.
 ///
-/// Referenced from the invitation service's `requireConfig` callback in
-/// [CallingService] rather than pushed as a screen directly -- the
-/// invitation service owns call routing end to end.
+/// [CallingService] hands this to the invitation service's `requireConfig`
+/// callback instead of us pushing a screen ourselves -- the invitation
+/// service is in charge of call routing from start to finish.
 ZegoUIKitPrebuiltCallConfig buildCallConfig({
   required bool isVideoCall,
   required void Function(Duration duration) onDurationUpdate,
@@ -24,17 +24,28 @@ ZegoUIKitPrebuiltCallConfig buildCallConfig({
   config.duration.isVisible = true;
   config.duration.onDurationUpdate = onDurationUpdate;
 
-  // Screen sharing only makes sense for video calls, so append it to
-  // whichever button list the group/1-to-1 factory above already set up.
-  if (isVideoCall) {
-    config.bottomMenuBar.buttons = [
-      ...config.bottomMenuBar.buttons,
-      ZegoCallMenuBarButtonName.toggleScreenSharingButton,
-    ];
-  }
+  // Video calls start on speaker; voice calls stay on the earpiece.
+  config.useSpeakerWhenJoining = isVideoCall;
 
-  // config.foreground survives minimize/restore, unlike a widget pushed
-  // separately.
+  // Screen sharing is turned off on purpose: it hits a bug in the Zego
+  // plugin that freezes the call screen once you grant capture permission.
+  config.bottomMenuBar.buttons = isVideoCall
+      ? const [
+          ZegoCallMenuBarButtonName.toggleCameraButton,
+          ZegoCallMenuBarButtonName.toggleMicrophoneButton,
+          ZegoCallMenuBarButtonName.hangUpButton,
+          ZegoCallMenuBarButtonName.switchAudioOutputButton,
+          ZegoCallMenuBarButtonName.switchCameraButton,
+        ]
+      : const [
+          ZegoCallMenuBarButtonName.toggleMicrophoneButton,
+          ZegoCallMenuBarButtonName.hangUpButton,
+          ZegoCallMenuBarButtonName.switchAudioOutputButton,
+        ];
+  config.bottomMenuBar.maxCount = config.bottomMenuBar.buttons.length;
+
+  // Setting foreground here means it survives minimize/restore, unlike a
+  // widget we'd push separately.
   config.foreground = const NetworkQualityBadge();
 
   return config;

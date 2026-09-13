@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_text_styles.dart';
 
-/// Full-space loading indicator for the loading branch of async screens.
+/// A full-space loading spinner, used for the loading state on async screens.
 class AppLoading extends StatelessWidget {
   final String? message;
 

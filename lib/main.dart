@@ -7,7 +7,9 @@ import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
 
 import 'core/constants/zego_constants.dart';
 import 'core/routes/app_routes.dart';
+import 'core/routes/navigator_key.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/forgot_password_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/register_screen.dart';
 import 'features/home/home_screen.dart';
@@ -18,8 +20,7 @@ import 'providers/calling_provider.dart';
 import 'providers/presence_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/permissions/notification_permission_flow.dart';
-
-final navigatorKey = GlobalKey<NavigatorState>();
+import 'services/tour_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +44,10 @@ class ConnectCallApp extends ConsumerWidget {
     ref.listen<AsyncValue<User?>>(authStateProvider, (previous, next) {
       final user = next.value;
       if (user != null) {
+        // Mark this before HomeScreen decides whether a tour is due, so the
+        // notification prompt below can't jump in ahead of that decision --
+        // HomeScreen clears this once it knows either way.
+        TourGate.markPending();
         ref
             .read(callingServiceProvider)
             .init(
@@ -51,10 +56,12 @@ class ConnectCallApp extends ConsumerWidget {
                   ? user.displayName!
                   : (user.email?.split('@').first ?? user.uid),
             )
-            .then((_) {
+            .then((_) async {
               // Ask for notification permission now that calling is live --
-              // not during splash/login/registration, where it wouldn't
-              // matter yet.
+              // asking during splash/login/registration would be too early.
+              // We wait for the Home tour to finish first so the two
+              // prompts don't pop up on top of each other.
+              await TourGate.whenIdle();
               final ctx = navigatorKey.currentContext;
               if (ctx != null && ctx.mounted) {
                 const NotificationPermissionFlow().maybeRequest(ctx);
@@ -81,6 +88,7 @@ class ConnectCallApp extends ConsumerWidget {
         AppRoutes.splash: (_) => const SplashScreen(),
         AppRoutes.login: (_) => const LoginScreen(),
         AppRoutes.register: (_) => const RegisterScreen(),
+        AppRoutes.forgotPassword: (_) => const ForgotPasswordScreen(),
         AppRoutes.home: (_) => const HomeScreen(),
       },
     );

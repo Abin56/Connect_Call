@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_text_styles.dart';
 
-/// Full-space error state with an optional retry action, used by the error
-/// branch of async screens (contacts list, call history, etc).
+/// A full-space error view with an optional retry button, used for the
+/// error state on async screens like the contacts list or call history.
 class AppError extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;

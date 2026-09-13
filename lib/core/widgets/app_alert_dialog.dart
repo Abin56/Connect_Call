@@ -4,12 +4,12 @@ import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_text_styles.dart';
 
-/// A centered, icon-led confirmation/informational dialog used across the
-/// app instead of a bare [AlertDialog], so every dialog (block confirmation,
-/// permission prompts, etc.) shares the same look.
+/// A centered dialog with an icon up top, used everywhere instead of a
+/// plain [AlertDialog] so things like block confirmations and permission
+/// prompts all look the same.
 ///
-/// Kept as a thin wrapper around [AlertDialog] so it still respects
-/// [ThemeData.dialogTheme] rather than being a fully custom widget.
+/// It's just a thin wrapper around [AlertDialog], so it still picks up
+/// [ThemeData.dialogTheme] instead of being a fully custom widget.
 class AppAlertDialog extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -18,7 +18,7 @@ class AppAlertDialog extends StatelessWidget {
   final String? confirmLabel;
   final VoidCallback? onConfirm;
 
-  /// Tints the icon badge and confirm button red (e.g. for Block).
+  /// Tints the icon and confirm button red, for things like Block.
   final bool destructive;
 
   const AppAlertDialog({
@@ -32,7 +32,7 @@ class AppAlertDialog extends StatelessWidget {
     this.destructive = false,
   });
 
-  /// Shows the dialog and resolves to `true` only if [confirmLabel] was tapped.
+  /// Shows the dialog, resolving to `true` only if the confirm button was tapped.
   static Future<bool> confirm(
     BuildContext context, {
     required IconData icon,

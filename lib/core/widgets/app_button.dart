@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Primary action button with a built-in loading spinner state so screens
-/// don't need to juggle disabling the button + swapping its child manually.
+/// A primary action button with a built-in loading spinner, so screens
+/// don't have to manually disable the button and swap its child at the same time.
 class AppButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;

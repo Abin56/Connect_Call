@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_text_styles.dart';
 
-/// Non-blocking banner shown when [isOnlineProvider] reports no connectivity.
+/// A banner shown when [isOnlineProvider] says there's no connection.
+/// Doesn't block anything -- just lets the user know.
 class OfflineBanner extends StatelessWidget {
   const OfflineBanner({super.key});
 

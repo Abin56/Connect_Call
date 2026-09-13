@@ -1,12 +1,12 @@
 import 'package:permission_handler/permission_handler.dart';
 
-/// Collapses [permission_handler]'s finer-grained [PermissionStatus] down to
-/// the three outcomes the call-permission flow actually branches on.
+/// Simplifies permission_handler's more detailed [PermissionStatus] down
+/// to the three outcomes the call-permission flow actually cares about.
 enum SinglePermissionState { granted, denied, permanentlyDenied }
 
-/// Combined mic/camera requirement for a call, plus which individual
-/// permissions are missing, so the UI can show "Camera access",
-/// "Microphone access", or the combined copy instead of always asking for both.
+/// The mic/camera permissions a call needs, plus which ones are missing,
+/// so the UI can ask for just "Camera access", just "Microphone access",
+/// or both instead of always asking for everything.
 class CallPermissionCheck {
   final SinglePermissionState microphone;
   final SinglePermissionState? camera;
@@ -37,8 +37,8 @@ SinglePermissionState _toState(PermissionStatus status) {
   return SinglePermissionState.denied;
 }
 
-/// Reads current mic/camera permission state *without* prompting the OS,
-/// so callers can decide whether a native dialog is even needed.
+/// Checks the current mic/camera permission state without prompting the
+/// OS, so callers can decide if a native dialog is even needed.
 Future<CallPermissionCheck> checkCallPermissions({
   required bool needsCamera,
 }) async {
@@ -50,9 +50,9 @@ Future<CallPermissionCheck> checkCallPermissions({
   );
 }
 
-/// Fires the native OS permission prompt(s) for whichever of mic/camera
-/// aren't already granted. Callers should show a rationale first -- this
-/// never shows any UI of its own.
+/// Triggers the native OS prompt for whichever of mic/camera isn't
+/// already granted. Callers should show their own rationale first -- this
+/// function never shows any UI itself.
 Future<CallPermissionCheck> requestCallPermissions({
   required bool needsCamera,
 }) async {

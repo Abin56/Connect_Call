@@ -4,8 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../core/constants/app_constants.dart';
 import '../models/user_model.dart';
 
-/// Wraps Firebase Authentication. Also creates/updates the matching
-/// Firestore user document so [UserService] has profile data to read.
+/// Wraps Firebase Authentication and also creates/updates the matching
+/// Firestore user document, so [UserService] has profile data to read.
 class AuthService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
@@ -56,10 +56,14 @@ class AuthService {
     );
   }
 
+  Future<void> sendPasswordResetEmail({required String email}) {
+    return _auth.sendPasswordResetEmail(email: email.trim());
+  }
+
   Future<void> logout() async {
     final uid = _auth.currentUser?.uid;
     if (uid != null) {
-      // Best-effort -- don't block logout if this fails.
+      // Best effort -- don't let this failure stop the logout.
       await _firestore
           .collection(AppConstants.usersCollection)
           .doc(uid)
@@ -69,13 +73,14 @@ class AuthService {
     await _auth.signOut();
   }
 
-  /// Converts common FirebaseAuthException codes into user-friendly messages.
+  /// Turns common Firebase auth error codes into friendly messages.
   String readableError(Object error) {
     if (error is FirebaseAuthException) {
       switch (error.code) {
         case 'invalid-email':
           return 'Please enter a valid email address.';
         case 'user-not-found':
+          return 'No account found with that email.';
         case 'wrong-password':
         case 'invalid-credential':
           return 'Unable to login. Please check your email and password.';

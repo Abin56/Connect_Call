@@ -9,13 +9,13 @@ import '../../providers/auth_provider.dart';
 import '../../providers/block_provider.dart';
 import '../../providers/connectivity_provider.dart';
 
-/// Places a group call to [invitees] via the same ZEGOCLOUD invitation
-/// service [startCall] uses for 1-to-1 calls.
+/// Places a group call to [invitees] using the same ZEGOCLOUD invitation
+/// service that [startCall] uses for 1-to-1 calls.
 ///
-/// Kept separate from [startCall] because group calls are deliberately NOT
-/// written to the `calls` history collection, which is shaped for one
-/// caller + one receiver -- branching that logic inside [startCall] would
-/// be more confusing than two small functions.
+/// Kept separate from [startCall] because group calls are deliberately
+/// not written to the `calls` history collection, which is built for one
+/// caller and one receiver -- branching that logic inside [startCall]
+/// would be messier than just having two small functions.
 ///
 /// Returns true if the invitation was sent.
 Future<bool> startGroupCall(
@@ -46,8 +46,8 @@ Future<bool> startGroupCall(
   final me = ref.read(authStateProvider).value;
   if (me == null) return false;
 
-  // Every invitee needs its own check -- the 1-to-1 block gate in
-  // call_initiator.dart never runs for a group call.
+  // Every invitee needs its own check here -- the 1-to-1 block check in
+  // call_initiator.dart doesn't run for a group call.
   final blockService = ref.read(blockServiceProvider);
   final blockChecks = await Future.wait(
     invitees.map((peer) => blockService.isBlockedEitherWay(me.uid, peer.id)),

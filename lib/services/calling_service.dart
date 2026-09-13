@@ -1,46 +1,46 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+import 'package:zego_express_engine/zego_express_engine.dart';
 import 'package:zego_uikit/zego_uikit.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
 
 import '../core/constants/zego_constants.dart';
+import '../core/routes/navigator_key.dart';
 import '../features/calling/call_config_builder.dart';
-import '../models/call_model.dart';
+import 'call_connection_watchdog.dart';
+import 'call_outcome_tracker.dart';
 import 'call_service.dart';
 
-/// Owns the ZEGOCLOUD call-invitation service lifecycle and bridges its
-/// callbacks to [CallService] Firestore writes.
+/// Manages the ZEGOCLOUD call-invitation service and connects its
+/// callbacks to [CallService]'s Firestore writes.
 ///
-/// The caller owns every status write it can observe directly (accepted,
-/// declined, timeout, canceled, missed). The receiver doesn't hold the
-/// Firestore doc id, so for the one case both sides can observe -- a call
-/// ending after connecting -- it resolves the same doc via `zegoCallId`
-/// instead (see [CallService.endConnectedCall]).
-///
-/// [_resolveCallEnd] is the single place both ends funnel through, guarded
-/// by [_terminalWriteIssued] so a dropped connection can't get written
-/// twice (once from `ReconnectFailed`, once from the SDK's own `onCallEnd`).
+/// Deciding which status to write for which event -- the trickiest part
+/// of this class -- is handled by [CallOutcomeTracker], a plain state
+/// machine with no ZEGOCLOUD or Firestore dependency, kept separate so
+/// that decision-making logic can be unit tested on its own. This class's
+/// job is just the wiring: turn ZEGOCLOUD callbacks into
+/// [CallOutcomeTracker] calls, then turn the [CallOutcomeWrite] that
+/// comes back into an actual [CallService] write.
 class CallingService {
   final CallService _callService;
+  final CallOutcomeTracker _tracker;
+  final CallConnectionWatchdog _watchdog;
 
-  CallingService({required CallService callService})
-    : _callService = callService;
+  CallingService({
+    required CallService callService,
+    CallOutcomeTracker? tracker,
+    CallConnectionWatchdog? watchdog,
+  }) : _callService = callService,
+       _tracker = tracker ?? CallOutcomeTracker(),
+       _watchdog = watchdog ?? CallConnectionWatchdog();
 
   bool _initialized = false;
-
-  /// Firestore doc id for the call this device is currently placing.
-  String? _outgoingCallId;
-  DateTime? _connectedAt;
-  Duration _lastKnownDuration = Duration.zero;
-
-  /// ZEGOCLOUD's own callID for the active call, caller or receiver side.
-  /// Lets a receiver resolve the caller's Firestore doc without holding
-  /// its id directly.
-  String? _currentZegoCallId;
-
-  /// Set once the terminal write for this call has gone out, so a repeat
-  /// callback can't write history twice for the same call.
-  bool _terminalWriteIssued = false;
+  bool _isGroupCall = false;
+  Timer? _watchdogTimer;
+  bool _peerEverJoined = false;
+  bool _roomReconnecting = false;
 
   Future<void> init({required String userId, required String userName}) async {
     if (!ZegoConstants.isConfigured || _initialized) return;
@@ -57,9 +57,16 @@ class CallingService {
           enableDialBack: false,
         ),
       ),
+      // Default ringing/connecting to speaker so a video call doesn't
+      // start on the earpiece -- buildCallConfig's useSpeakerWhenJoining
+      // takes over once the call actually connects.
+      uiConfig: ZegoCallInvitationUIConfig(
+        inviter: ZegoCallInvitationInviterUIConfig(defaultSpeakerOn: true),
+        invitee: ZegoCallInvitationInviteeUIConfig(defaultSpeakerOn: true),
+      ),
       notificationConfig: ZegoCallInvitationNotificationConfig(
         androidNotificationConfig: ZegoCallAndroidNotificationConfig(
-          // Wake and cover the lock screen for incoming calls.
+          // Show incoming calls even on a locked screen.
           showOnLockedScreen: true,
           showOnFullScreen: true,
           callChannel: ZegoCallAndroidNotificationChannelConfig(
@@ -69,15 +76,13 @@ class CallingService {
         ),
       ),
       requireConfig: (ZegoCallInvitationData data) {
-        if (data.callID.isNotEmpty) {
-          _currentZegoCallId = data.callID;
-          _terminalWriteIssued = false;
-        }
+        _tracker.onCallConfigRequired(data.callID);
+        // More than one invitee means it's a group call.
+        _isGroupCall = data.invitees.length > 1;
         return buildCallConfig(
           isVideoCall: data.type == ZegoCallInvitationType.videoCall,
-          onDurationUpdate: (duration) => _lastKnownDuration = duration,
-          // More than one invitee means a group call, on either side.
-          isGroupCall: data.invitees.length > 1,
+          onDurationUpdate: _tracker.updateDuration,
+          isGroupCall: _isGroupCall,
         );
       },
       events: ZegoUIKitPrebuiltCallEvents(
@@ -100,31 +105,18 @@ class CallingService {
     if (!_initialized) return;
     await ZegoUIKitPrebuiltCallInvitationService().uninit();
     _initialized = false;
-    _outgoingCallId = null;
-    _currentZegoCallId = null;
-    _connectedAt = null;
-    _lastKnownDuration = Duration.zero;
-    _terminalWriteIssued = false;
+    _tracker.reset();
+    _disarmWatchdog();
   }
 
-  /// Call this right after [CallService.createCall] so the callbacks below
-  /// know which Firestore doc to update.
+  /// Call this right after [CallService.createCall] so the callbacks
+  /// below know which Firestore doc to update.
   void trackOutgoingCall(String callId, {required String zegoCallId}) {
-    _outgoingCallId = callId;
-    _currentZegoCallId = zegoCallId;
-    _connectedAt = null;
-    _lastKnownDuration = Duration.zero;
-    _terminalWriteIssued = false;
+    _tracker.trackOutgoingCall(callId, zegoCallId: zegoCallId);
   }
 
   void _onOutgoingCallAccepted(String callID, ZegoCallUser callee) {
-    final callId = _outgoingCallId;
-    if (callId == null) return;
-    _connectedAt = DateTime.now();
-    _writeCallStatus(
-      () => _callService.updateCallStatus(callId, status: CallStatus.connected),
-      context: 'onOutgoingCallAccepted',
-    );
+    _apply(_tracker.onOutgoingCallAccepted(), context: 'onOutgoingCallAccepted');
   }
 
   void _onOutgoingCallDeclined(
@@ -132,7 +124,10 @@ class CallingService {
     ZegoCallUser callee,
     String customData,
   ) {
-    _endOutgoingAs(CallStatus.rejected);
+    _apply(
+      _tracker.onOutgoingCallDeclinedOrBusy(),
+      context: 'onOutgoingCallDeclined',
+    );
   }
 
   void _onOutgoingCallRejectedCauseBusy(
@@ -140,7 +135,10 @@ class CallingService {
     ZegoCallUser callee,
     String customData,
   ) {
-    _endOutgoingAs(CallStatus.rejected);
+    _apply(
+      _tracker.onOutgoingCallDeclinedOrBusy(),
+      context: 'onOutgoingCallRejectedCauseBusy',
+    );
   }
 
   void _onOutgoingCallTimeout(
@@ -148,94 +146,160 @@ class CallingService {
     List<ZegoCallUser> callees,
     bool isVideoCall,
   ) {
-    _endOutgoingAs(CallStatus.missed);
+    _apply(
+      _tracker.onOutgoingCallTimeoutOrCanceled(),
+      context: 'onOutgoingCallTimeout',
+    );
   }
 
   void _onOutgoingCallCanceled() {
-    _endOutgoingAs(CallStatus.missed);
-  }
-
-  void _endOutgoingAs(CallStatus status) {
-    if (_terminalWriteIssued) return;
-    final callId = _outgoingCallId;
-    if (callId == null) return;
-    _terminalWriteIssued = true;
-    _outgoingCallId = null;
-    _currentZegoCallId = null;
-    _writeCallStatus(
-      () => _callService.updateCallStatus(
-        callId,
-        status: status,
-        endedAt: DateTime.now(),
-      ),
-      context: '_endOutgoingAs($status)',
+    _apply(
+      _tracker.onOutgoingCallTimeoutOrCanceled(),
+      context: 'onOutgoingCallCanceled',
     );
   }
 
   void _onCallEnd(ZegoCallEndEvent event, VoidCallback defaultAction) {
-    _resolveCallEnd(wasConnected: _connectedAt != null);
+    _disarmWatchdog();
+    _apply(
+      _tracker.onCallEnd(wasConnected: _tracker.isConnected),
+      context: 'onCallEnd',
+    );
     defaultAction();
   }
 
-  /// Only a reconnect failure counts as a call outcome -- reconnecting
-  /// itself is transient and the SDK handles it on its own.
   void _onRoomStateChanged(ZegoUIKitRoomState state) {
-    if (state.reason != ZegoRoomStateChangedReason.ReconnectFailed) return;
-    if (_connectedAt == null) return;
-    _resolveCallEnd(wasConnected: true, disconnected: true);
-  }
-
-  /// Single resolution path for [_onCallEnd] and [_onRoomStateChanged] so
-  /// they can't both write a terminal status for the same call.
-  void _resolveCallEnd({
-    required bool wasConnected,
-    bool disconnected = false,
-  }) {
-    if (_terminalWriteIssued) return;
-    _terminalWriteIssued = true;
-
-    final durationInSeconds = _lastKnownDuration.inSeconds;
-    final callId = _outgoingCallId;
-    final zegoCallId = _currentZegoCallId;
-
-    if (callId != null) {
-      // Caller side: we hold the Firestore doc id directly.
-      _outgoingCallId = null;
-      final status = !wasConnected
-          ? CallStatus.failed
-          : (disconnected ? CallStatus.disconnected : CallStatus.ended);
-      _writeCallStatus(
-        () => _callService.updateCallStatus(
-          callId,
-          status: status,
-          endedAt: DateTime.now(),
-          durationInSeconds: wasConnected ? durationInSeconds : null,
-        ),
-        context: '_resolveCallEnd(caller, $status)',
-      );
-    } else if (wasConnected && zegoCallId != null) {
-      // Receiver side: resolve the caller's doc via zegoCallId instead.
-      // Only applies once connected -- a receiver never writes "failed".
-      final resolve = disconnected
-          ? _callService.disconnectConnectedCall
-          : _callService.endConnectedCall;
-      _writeCallStatus(
-        () => resolve(
-          zegoCallId,
-          endedAt: DateTime.now(),
-          durationInSeconds: durationInSeconds,
-        ),
-        context: '_resolveCallEnd(receiver, disconnected=$disconnected)',
-      );
+    switch (state.reason) {
+      case ZegoRoomStateChangedReason.Logined:
+        // Fires for the caller AND the receiver once each device has
+        // actually joined the call room -- unlike onOutgoingCallAccepted,
+        // which is caller-only. Needed so a receiver's device can ever
+        // mark itself connected (see CallOutcomeTracker.markConnected).
+        _tracker.markConnected();
+        _roomReconnecting = false;
+        _armWatchdog();
+      case ZegoRoomStateChangedReason.Reconnecting:
+        // Our own connection is the one having trouble here, not the
+        // peer's -- pause the watchdog for it so a blip on this device
+        // can't read as "the peer went quiet".
+        _roomReconnecting = true;
+      case ZegoRoomStateChangedReason.Reconnected:
+        _roomReconnecting = false;
+      case ZegoRoomStateChangedReason.ReconnectFailed:
+        // Only a failed reconnect counts as a real call outcome -- a
+        // normal reconnect attempt is temporary and the SDK handles it on
+        // its own.
+        _disarmWatchdog();
+        _apply(_tracker.onReconnectFailed(), context: 'onRoomStateChanged');
+      default:
+        break;
     }
-
-    _currentZegoCallId = null;
-    _connectedAt = null;
-    _lastKnownDuration = Duration.zero;
   }
 
-  /// Fire-and-forget since these SDK callbacks are synchronous, but errors
-  /// are still logged instead of swallowed.
+  /// Fallback for when ZEGOCLOUD's own "remote user left" detection misses
+  /// the peer actually leaving (see [CallConnectionWatchdog]). Only runs
+  /// for 1-to-1 calls -- one participant leaving a group call is normal
+  /// and shouldn't end the call for everyone else.
+  ///
+  /// Skips arming a second timer if one is already running, since
+  /// `Logined` can fire more than once for the same call (e.g. a
+  /// reconnect re-login).
+  void _armWatchdog() {
+    if (_isGroupCall || _watchdogTimer != null) return;
+    _watchdogTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (_watchdog.onTick(peerReachable: _samplePeerReachable())) {
+        _forceEndStuckCall();
+      }
+    });
+  }
+
+  void _disarmWatchdog() {
+    _watchdogTimer?.cancel();
+    _watchdogTimer = null;
+    _watchdog.reset();
+    _peerEverJoined = false;
+    _roomReconnecting = false;
+  }
+
+  /// Whether this tick counts as evidence the peer is gone. Three cases
+  /// are deliberately read as "reachable" (i.e. don't count against the
+  /// grace timer) even though we can't confirm the peer is actually there,
+  /// because none of them are proof the peer left:
+  ///
+  /// - Our own room connection is mid-reconnect ([_roomReconnecting]) --
+  ///   that's trouble on this device, not theirs.
+  /// - The peer hasn't been observed in the room yet ([_peerEverJoined]) --
+  ///   early in a call, before the other side has joined, the roster is
+  ///   empty and stream quality reads its unset default for reasons that
+  ///   have nothing to do with them leaving.
+  /// - Their stream quality is merely `Unknown` rather than the SDK's own
+  ///   `Die` ("failed") level -- `Unknown` is also what an unset quality
+  ///   reading defaults to, so treating it the same as `Die` would flag a
+  ///   stream that just hasn't reported in yet, not one that's dead.
+  ///
+  /// Only an empty roster, or a peer stream the SDK itself has already
+  /// marked `Die`, counts as unreachable.
+  bool _samplePeerReachable() {
+    if (_roomReconnecting) return true;
+
+    final remoteUsers = ZegoUIKit().getRemoteUsers();
+    if (remoteUsers.isNotEmpty) _peerEverJoined = true;
+    if (!_peerEverJoined) return true;
+    if (remoteUsers.isEmpty) return false;
+
+    final level = ZegoUIKit()
+        .getAudioVideoQualityNotifier(remoteUsers.first.id)
+        .value
+        .level;
+    return level != ZegoStreamQualityLevel.Die;
+  }
+
+  /// The peer has been unreachable for the watchdog's whole grace period --
+  /// hang up locally exactly like the user pressing the hang-up button
+  /// would, so it goes through the same [_onCallEnd] path (closes the UI,
+  /// writes the same call-history status) instead of duplicating that logic.
+  void _forceEndStuckCall() {
+    _disarmWatchdog();
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+    ZegoUIKitPrebuiltCallController().hangUp(
+      context,
+      showConfirmation: false,
+      reason: ZegoCallEndReason.abandoned,
+    );
+  }
+
+  void _apply(CallOutcomeWrite? write, {required String context}) {
+    switch (write) {
+      case null:
+        return;
+      case CallerStatusWrite w:
+        _writeCallStatus(
+          () => _callService.updateCallStatus(
+            w.callId,
+            status: w.status,
+            endedAt: w.endedAt,
+            durationInSeconds: w.durationInSeconds,
+          ),
+          context: context,
+        );
+      case ReceiverResolveWrite w:
+        final resolve = w.disconnected
+            ? _callService.disconnectConnectedCall
+            : _callService.endConnectedCall;
+        _writeCallStatus(
+          () => resolve(
+            w.zegoCallId,
+            endedAt: w.endedAt,
+            durationInSeconds: w.durationInSeconds,
+          ),
+          context: context,
+        );
+    }
+  }
+
+  /// Fire-and-forget because these SDK callbacks are synchronous, but we
+  /// still log errors instead of silently dropping them.
   void _writeCallStatus(Future<void> Function() write, {required String context}) {
     write().catchError((Object error, StackTrace stackTrace) {
       debugPrint('CallingService: call-status write failed ($context): $error\n$stackTrace');

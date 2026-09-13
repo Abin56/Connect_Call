@@ -6,12 +6,12 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/auth_provider.dart';
 
-/// Brand-intro animation that plays while Firebase resolves auth state,
-/// then routes to Home or Login.
+/// The brand intro animation that plays while Firebase figures out the
+/// auth state, then sends the user to Home or Login.
 ///
-/// The animation and navigation are decoupled: [_controller] always plays
-/// once through, and navigation waits for the intro to settle
-/// ([_introSettled]) so a fast auth response can't cut it short.
+/// The animation and the navigation are kept separate: [_controller]
+/// always plays all the way through, and navigation waits for the intro
+/// to settle ([_introSettled]) so a fast auth response can't cut it short.
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -30,19 +30,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   late final AnimationController _controller;
 
-  // Phase 1 (0-350ms): ambient glow rises behind the center.
+  // Phase 1 (0-350ms): a glow rises behind the center.
   late final Animation<double> _ambientGlow = CurvedAnimation(
     parent: _controller,
     curve: const Interval(0.0, 0.18, curve: Curves.easeOut),
   );
 
-  // Phase 2 (~210-610ms): a single red light sweep crosses the screen.
+  // Phase 2 (~210-610ms): a red light sweeps across the screen once.
   late final Animation<double> _sweep1 = CurvedAnimation(
     parent: _controller,
     curve: const Interval(0.11, 0.32, curve: Curves.easeInOut),
   );
 
-  // Phase 3 (~475-950ms): Sankar Group logo fades + scales in.
+  // Phase 3 (~475-950ms): the Sankar Group logo fades and scales in.
   late final Animation<double> _logoFade = CurvedAnimation(
     parent: _controller,
     curve: const Interval(0.25, 0.5, curve: Curves.easeOut),
@@ -55,7 +55,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         ),
       );
 
-  // Phase 4 (~625-1180ms): the logo's glow breathes once (rise then settle).
+  // Phase 4 (~625-1180ms): the logo's glow breathes once, rising then settling.
   late final Animation<double> _glowBreatheUp = CurvedAnimation(
     parent: _controller,
     curve: const Interval(0.33, 0.5, curve: Curves.easeOut),
@@ -65,13 +65,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     curve: const Interval(0.5, 0.62, curve: Curves.easeIn),
   );
 
-  // Phase 5 (~760-1100ms): a second, lower sweep introduces the wordmark.
+  // Phase 5 (~760-1100ms): a second, lower sweep brings in the wordmark.
   late final Animation<double> _sweep2 = CurvedAnimation(
     parent: _controller,
     curve: const Interval(0.4, 0.58, curve: Curves.easeInOut),
   );
 
-  // Phase 6 (~890-1350ms): ConnectCall wordmark + tagline settle in.
+  // Phase 6 (~890-1350ms): the ConnectCall wordmark and tagline settle in.
   late final Animation<double> _wordmarkFade = CurvedAnimation(
     parent: _controller,
     curve: const Interval(0.47, 0.71, curve: Curves.easeOut),
@@ -108,8 +108,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       _navigateIfReady();
     });
 
-    // Even with a fast auth response, hold the branding on screen for a
-    // minimum settle time so the intro never feels cut off.
+    // Even if auth responds fast, keep the branding on screen for a
+    // minimum amount of time so the intro never feels cut off.
     Future.delayed(reduceMotion ? Duration.zero : _minSettleDuration, () {
       if (!mounted) return;
       setState(() => _introSettled = true);
@@ -218,7 +218,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 }
 
-/// Near-black (or near-white) base with a faint red atmospheric glow rising
+/// A near-black (or near-white) background with a faint red glow rising
 /// behind the center -- Phase 1.
 class _AmbientBackground extends StatelessWidget {
   const _AmbientBackground({required this.isDark, required this.glow});
@@ -265,10 +265,10 @@ class _AmbientBackground extends StatelessWidget {
   }
 }
 
-/// A single diagonal red light reflection that sweeps across the screen
-/// once, driven by [progress] (0..1). Implemented as a positioned gradient
-/// band rather than a shader/CustomPainter, since a plain transform is
-/// cheap enough to redraw every frame.
+/// A diagonal red light that sweeps across the screen once, driven by
+/// [progress] (0 to 1). Built as a positioned gradient band rather than a
+/// shader or CustomPainter, since a plain transform is cheap enough to
+/// redraw every frame.
 class _LightSweep extends StatelessWidget {
   const _LightSweep({required this.progress, required this.alignment});
 
@@ -279,7 +279,7 @@ class _LightSweep extends StatelessWidget {
   Widget build(BuildContext context) {
     if (progress <= 0 || progress >= 1) return const SizedBox.shrink();
 
-    // Sweep travels from off-screen left to off-screen right.
+    // The sweep travels from off-screen left to off-screen right.
     final dx = (progress * 2.6) - 1.3;
 
     return Align(
@@ -313,8 +313,8 @@ class _LightSweep extends StatelessWidget {
     );
   }
 
-  /// Fades the sweep in/out at the start and end of its travel so it never
-  /// pops in with a hard edge.
+  /// Fades the sweep in and out at the start and end of its travel so it
+  /// never pops in with a hard edge.
   double _edgeFade(double t) {
     if (t < 0.15) return t / 0.15;
     if (t > 0.85) return (1 - t) / 0.15;
@@ -322,7 +322,7 @@ class _LightSweep extends StatelessWidget {
   }
 }
 
-/// The Sankar Group logo with a soft red glow behind it -- Phases 3 & 4.
+/// The Sankar Group logo with a soft red glow behind it -- Phases 3 and 4.
 class _LogoWithGlow extends StatelessWidget {
   const _LogoWithGlow({
     required this.fade,

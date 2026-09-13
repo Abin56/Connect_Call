@@ -4,24 +4,24 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../core/utils/call_permissions.dart';
 import '../../core/widgets/permission_rationale_dialog.dart';
 
-/// Single reusable gate every call entry point (1-to-1, group, audio/video)
-/// runs through before placing a call. Centralized here so the
-/// explain-then-ask-then-continue UX stays consistent instead of drifting
-/// per screen.
+/// One shared check that every call entry point (1-to-1, group,
+/// audio/video) runs through before placing a call. Keeping it in one
+/// place means the explain-then-ask-then-continue flow stays consistent
+/// instead of drifting screen to screen.
 ///
-/// Never touches ZEGOCLOUD or Firestore -- just answers "is it OK to start
-/// this call right now". Callers must bail out if this returns `false`.
+/// Never touches ZEGOCLOUD or Firestore -- it just answers "is it OK to
+/// start this call right now?". Callers must bail out if it returns `false`.
 class CallPermissionFlow {
   const CallPermissionFlow();
 
-  /// Guards against a double-tap opening two overlapping permission dialogs
-  /// at once. Static since every call site constructs its own `const
-  /// CallPermissionFlow()` but they must all share one in-flight flow.
+  /// Stops a double-tap from opening two permission dialogs at once. It's
+  /// static because every call site makes its own `const
+  /// CallPermissionFlow()`, but they all need to share one in-flight check.
   static bool _inFlight = false;
 
-  /// Runs the full flow for a call needing mic, and camera too if
-  /// [needsCamera]. Returns `true` only once granted; `false` immediately
-  /// if a flow is already in progress from an earlier tap.
+  /// Runs the full flow for a call that needs mic, and camera too if
+  /// [needsCamera]. Returns `true` only once access is granted, or
+  /// `false` right away if a flow is already running from an earlier tap.
   Future<bool> ensure(
     BuildContext context, {
     required bool needsCamera,
@@ -43,7 +43,7 @@ class CallPermissionFlow {
     if (check.isGranted) return true;
 
     // Already permanently denied -- go straight to the Settings dialog
-    // rather than a rationale for a native prompt that won't appear.
+    // instead of showing a rationale for a native prompt that won't show up.
     if (!context.mounted) return false;
     if (check.isPermanentlyDenied) {
       return _handlePermanentlyDenied(context, check);
@@ -82,8 +82,8 @@ class CallPermissionFlow {
     if (openSettings) {
       await openAppSettings();
     }
-    // Caller must re-check after this returns -- returning `true` here
-    // would start a call before the permission is actually granted.
+    // The caller must re-check after this -- returning `true` here would
+    // start a call before permission is actually granted.
     return false;
   }
 

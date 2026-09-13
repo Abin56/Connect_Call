@@ -3,8 +3,10 @@ import 'package:sankar_group/features/calling/call_config_builder.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 
 void main() {
-  group('buildCallConfig screen sharing (Bonus 8)', () {
-    test('video calls get the screen-sharing button', () {
+  group('buildCallConfig screen sharing', () {
+    // Screen sharing is turned off: it hits a bug in the Zego plugin
+    // that freezes the call screen.
+    test('video calls do not get the screen-sharing button', () {
       final config = buildCallConfig(
         isVideoCall: true,
         onDurationUpdate: (_) {},
@@ -12,7 +14,7 @@ void main() {
 
       expect(
         config.bottomMenuBar.buttons,
-        contains(ZegoCallMenuBarButtonName.toggleScreenSharingButton),
+        isNot(contains(ZegoCallMenuBarButtonName.toggleScreenSharingButton)),
       );
     });
 
@@ -28,7 +30,7 @@ void main() {
       );
     });
 
-    test('group video calls also get the screen-sharing button', () {
+    test('group video calls also do not get the screen-sharing button', () {
       final config = buildCallConfig(
         isVideoCall: true,
         isGroupCall: true,
@@ -37,7 +39,7 @@ void main() {
 
       expect(
         config.bottomMenuBar.buttons,
-        contains(ZegoCallMenuBarButtonName.toggleScreenSharingButton),
+        isNot(contains(ZegoCallMenuBarButtonName.toggleScreenSharingButton)),
       );
     });
   });

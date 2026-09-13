@@ -4,10 +4,10 @@ import 'app_colors.dart';
 import 'app_radius.dart';
 import 'app_text_styles.dart';
 
-/// Light and dark ThemeData for ConnectCall's black-and-red brand identity.
-/// Component themes are centralized here so screens style themselves purely
-/// by using standard Material widgets (ElevatedButton, TextFormField, Card,
-/// etc.) themed consistently, rather than hardcoding colors per-widget.
+/// Light and dark ThemeData for ConnectCall's black-and-red look. Every
+/// component's style lives here, so screens can just use plain Material
+/// widgets (ElevatedButton, TextFormField, Card, and so on) and get
+/// consistent styling for free, instead of hardcoding colors everywhere.
 class AppTheme {
   AppTheme._();
 

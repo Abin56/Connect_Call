@@ -5,19 +5,19 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/network_quality.dart';
 
-/// Small network-quality pill shown during a call, driven by ZEGOCLOUD's
-/// own per-stream quality notifier instead of a separate network test.
-/// Purely informational -- never interrupts the call.
+/// A small pill showing network quality during a call, driven by
+/// ZEGOCLOUD's own per-stream quality data instead of a separate network
+/// test. Purely informational -- it never interrupts the call.
 ///
-/// Passed as [ZegoUIKitPrebuiltCallConfig.foreground] from [buildCallConfig]
-/// so it survives call minimize/restore.
+/// Passed as [ZegoUIKitPrebuiltCallConfig.foreground] from
+/// [buildCallConfig] so it survives call minimize/restore.
 class NetworkQualityBadge extends StatelessWidget {
   const NetworkQualityBadge({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Offset to clear ZEGOCLOUD's own top menu bar (~96px tall by default)
-    // instead of sitting under its title text.
+    // Nudge it down to clear ZEGOCLOUD's own top bar (about 96px tall)
+    // instead of overlapping its title text.
     return Positioned(
       top: MediaQuery.of(context).padding.top + 104,
       left: 12,
